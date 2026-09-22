@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ITMC Vendor Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#062B63; --navy-dark:#031E46; --blue:#0878E8; --blue-bright:#1677E8;
+  --blue-light:#EAF4FF; --bg:#F6F9FC; --white:#FFFFFF; --surface:#FFFFFF;
+  --green:#16A765; --yellow:#F5B51B; --purple:#7B61D1; --red:#E74C4C;
+  --text:#102A56; --muted:#6B7A90; --border:#E2E9F2; --shadow:0 1px 2px rgba(16,42,86,.05),0 6px 18px rgba(16,42,86,.06);
+  --radius:14px; --sidebar-w:252px; --header-h:72px;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1524; --surface:#111E33; --white:#111E33; --text:#E8F0FB; --muted:#94A6BF;
+    --border:#20304C; --blue-light:#152744; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1524; --surface:#111E33; --white:#111E33; --text:#E8F0FB; --muted:#94A6BF;
+  --border:#20304C; --blue-light:#152744; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:Manrope,Inter,sans-serif;margin:0;letter-spacing:-.02em;color:var(--text)}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--blue);text-decoration:none}
+img{max-width:100%}
+:focus-visible{outline:2px solid var(--blue-bright);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- LOGIN ---------- */
+#login{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;background:var(--bg)}
+.login-art{position:relative;background:linear-gradient(160deg,#031E46 0%,#062B63 55%,#0A3C86 100%);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.login-art .skyline{position:absolute;left:0;right:0;bottom:0;opacity:.28}
+.login-art h1{color:#fff;font-size:40px;line-height:1.1;max-width:12ch}
+.brandmark{display:flex;align-items:center;gap:12px;font-family:Manrope;font-weight:800;letter-spacing:.14em;font-size:15px}
+.brandmark .mk{width:34px;height:34px;border-radius:9px;background:linear-gradient(140deg,#1677E8,#0878E8);display:grid;place-items:center;font-size:16px;letter-spacing:0}
+.login-art p{color:#BFD7F5;max-width:44ch;position:relative}
+.trust{display:flex;gap:26px;position:relative;flex-wrap:wrap}
+.trust div{font-size:12px;color:#9FC2EE}
+.trust strong{display:block;font-family:Manrope;font-size:22px;color:#fff}
+.login-form{display:flex;align-items:center;justify-content:center;padding:40px 32px}
+.login-card{width:100%;max-width:410px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:var(--shadow)}
+.login-card h2{font-size:23px;margin-bottom:6px}
+.field{margin:18px 0}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:7px}
+.req{color:var(--red)}
+input[type=text],input[type=date],input[type=email],input[type=number],select,textarea{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(8,120,232,.14);outline:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:10px;border:1px solid transparent;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;transition:filter .15s,background .15s}
+.btn:hover{filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.block{width:100%}
+.btn.ghost{background:transparent;color:var(--blue);border-color:var(--border)}
+.btn.ghost:hover{background:var(--blue-light)}
+.btn.sm{padding:7px 12px;font-size:12.5px}
+.btn.quiet{background:var(--blue-light);color:var(--navy);border-color:transparent}
+.note{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;margin-top:16px}
+.error-msg{color:var(--red);font-size:12.5px;margin-top:8px;display:none}
+.hint{background:var(--blue-light);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--navy);margin-top:18px}
+.hint code{font-weight:600}
+
+/* ---------- SHELL ---------- */
+#app{display:none;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--navy-dark);color:#C9DBF3;display:flex;flex-direction:column;z-index:60}
+.sidebar .logo{padding:22px 20px 16px;color:#fff}
+.nav{flex:1;overflow-y:auto;padding:6px 12px}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;padding:9.5px 12px;margin-bottom:2px;border:0;background:transparent;color:#B8CFEC;border-radius:10px;cursor:pointer;font-size:13.5px;text-align:left}
+.nav button:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav button.active{background:var(--blue-bright);color:#fff;font-weight:600}
+.nav .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:20px}
+.nav .sec{font-size:10.5px;letter-spacing:.1em;color:#5F7CA6;padding:16px 12px 6px;font-weight:600}
+.secure-badge{margin:12px;padding:13px;border-radius:12px;background:rgba(22,167,101,.12);border:1px solid rgba(22,167,101,.3);font-size:11.5px;color:#9FE5C3}
+.secure-badge strong{display:block;color:#3FD494;font-size:12px;margin-bottom:2px}
+.side-foot{padding:14px 20px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;letter-spacing:.1em;color:#5F7CA6}
+.side-foot b{display:block;color:#fff;font-family:Manrope;letter-spacing:.14em;font-size:12px;margin-bottom:3px}
+.main{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:40;height:var(--header-h);background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px}
+.topbar h2{font-size:17px}
+.topbar .sub{font-size:12px;color:var(--muted)}
+.spacer{flex:1}
+.searchbox{position:relative;width:260px}
+.searchbox input{padding-left:34px;font-size:13px}
+.searchbox svg{position:absolute;left:11px;top:11px;color:var(--muted)}
+.search-results{position:absolute;top:46px;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);max-height:330px;overflow:auto;display:none;z-index:50}
+.search-results button{display:block;width:100%;text-align:left;padding:10px 13px;border:0;background:transparent;cursor:pointer;border-bottom:1px solid var(--border);font-size:12.5px}
+.search-results button:hover{background:var(--blue-light)}
+.qsel{border:1px solid var(--border);border-radius:10px;padding:5px 11px;font-size:12px;line-height:1.3;cursor:pointer;background:var(--surface)}
+.qsel b{display:block;font-size:12.5px;color:var(--text)}
+.qsel span{color:var(--muted);font-size:11px}
+.iconbtn{position:relative;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--text)}
+.iconbtn:hover{background:var(--blue-light)}
+.iconbtn .dot{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:17px;height:17px;border-radius:10px;display:grid;place-items:center;padding:0 4px}
+.userchip{display:flex;align-items:center;gap:9px;padding:5px 9px 5px 5px;border:1px solid var(--border);border-radius:30px;background:var(--surface);cursor:pointer}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(140deg,#1677E8,#062B63);color:#fff;display:grid;place-items:center;font-size:11.5px;font-weight:700}
+.userchip b{font-size:12.5px;display:block;line-height:1.2}
+.userchip span{font-size:11px;color:var(--muted)}
+.page{padding:26px 24px 60px;flex:1;max-width:1480px;width:100%}
+.page-head{margin-bottom:20px}
+.page-head h1{font-size:25px}
+.page-head p{color:var(--muted);margin:5px 0 0}
+
+/* ---------- PRIMITIVES ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border)}
+.card-h h3{font-size:15px}
+.card-h p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.card-b{padding:18px}
+.grid{display:grid;gap:16px}
+.g6{grid-template-columns:repeat(6,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g21{grid-template-columns:2fr 1fr}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:16px}
+.ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none}
+.kpi{padding:16px 17px}
+.kpi .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px}
+.kpi .label{font-size:12.5px;color:var(--muted);font-weight:500}
+.kpi .val{font-family:Manrope;font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.kpi .val.money{font-size:20px}
+.kpi .meta{font-size:11.5px;color:var(--muted);margin-top:5px}
+.kpi .up{color:var(--green);font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3.5px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.pill:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-approved,.p-paid{background:rgba(22,167,101,.13);color:#0E7C4A}
+.p-forapproval,.p-submitted,.p-scheduled{background:rgba(245,181,27,.16);color:#9A6B00}
+.p-forprocessing,.p-processing,.p-underreview{background:rgba(123,97,209,.14);color:#5B44A8}
+.p-returned,.p-onhold{background:rgba(231,76,76,.13);color:#C33}
+:root[data-theme="dark"] .p-approved,:root[data-theme="dark"] .p-paid{color:#4FD69B}
+table{width:100%;border-collapse:collapse}
+.table-wrap{overflow-x:auto}
+th{text-align:left;font-size:11px;letter-spacing:.04em;color:var(--muted);font-weight:600;padding:11px 14px;border-bottom:1px solid var(--border);white-space:nowrap;background:color-mix(in srgb,var(--blue-light) 45%,var(--surface))}
+td{padding:13px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:color-mix(in srgb,var(--blue-light) 55%,transparent)}
+td .mono{font-weight:600;color:var(--text)}
+.amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.linkbtn{background:none;border:0;color:var(--blue);font-weight:600;cursor:pointer;font-size:12.5px;padding:4px 6px;border-radius:6px}
+.linkbtn:hover{background:var(--blue-light)}
+.menu{position:relative;display:inline-block}
+.menu-pop{position:absolute;right:0;top:30px;background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:var(--shadow);min-width:182px;z-index:30;overflow:hidden}
+.menu-pop button{display:block;width:100%;text-align:left;padding:9px 13px;border:0;background:transparent;cursor:pointer;font-size:12.5px}
+.menu-pop button:hover{background:var(--blue-light)}
+.tabs{display:flex;gap:4px;background:var(--blue-light);padding:4px;border-radius:11px;width:fit-content}
+.tabs button{border:0;background:transparent;padding:7px 15px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted)}
+.tabs button.on{background:var(--surface);color:var(--blue);box-shadow:var(--shadow)}
+.chip{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12.5px;font-weight:500}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty h4{font-size:15px;margin-bottom:6px}
+.skel{background:linear-gradient(90deg,var(--border) 25%,color-mix(in srgb,var(--border) 40%,var(--surface)) 50%,var(--border) 75%);background-size:200% 100%;animation:sh 1.3s infinite;border-radius:8px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.toast-wrap{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:10px}
+.toast{background:var(--navy-dark);color:#fff;padding:13px 16px;border-radius:12px;box-shadow:0 12px 30px rgba(3,30,70,.3);font-size:13px;display:flex;gap:10px;align-items:center;max-width:340px;animation:slide .25s ease}
+@keyframes slide{from{transform:translateY(10px);opacity:0}}
+.toast .ok{color:#3FD494}
+.overlay{position:fixed;inset:0;background:rgba(3,30,70,.45);z-index:100;display:flex;justify-content:flex-end}
+.drawer{width:min(560px,100%);background:var(--bg);height:100%;overflow-y:auto;animation:din .22s ease}
+@keyframes din{from{transform:translateX(24px);opacity:.6}}
+.modal-center{align-items:center;justify-content:center;padding:20px}
+.modal{width:min(620px,100%);max-height:88vh;overflow-y:auto;background:var(--surface);border-radius:16px;animation:min .2s ease}
+@keyframes min{from{transform:scale(.97);opacity:0}}
+.drawer-h{position:sticky;top:0;background:var(--navy-dark);color:#fff;padding:18px 22px;display:flex;align-items:flex-start;gap:12px;z-index:5}
+.drawer-h h3{color:#fff;font-size:17px}
+.drawer-h p{margin:3px 0 0;color:#A8C6EA;font-size:12.5px}
+.x{margin-left:auto;background:rgba(255,255,255,.12);border:0;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px}
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.dl div{background:var(--surface);padding:11px 14px}
+.dl dt{font-size:11px;color:var(--muted);margin-bottom:3px}
+.dl dd{margin:0;font-size:13px;font-weight:600}
+.timeline{position:relative;padding-left:8px}
+.tl-item{display:flex;gap:13px;padding-bottom:18px;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:before{content:"";position:absolute;left:12px;top:26px;bottom:-2px;width:2px;background:var(--border)}
+.tl-item:last-child:before{display:none}
+.tl-item.done:before{background:var(--green)}
+.tl-dot{width:25px;height:25px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;background:var(--border);color:var(--muted);z-index:1;border:3px solid var(--surface)}
+.tl-item.done .tl-dot{background:var(--green);color:#fff}
+.tl-item.now .tl-dot{background:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(8,120,232,.18)}
+.tl-b b{font-size:13px;display:block}
+.tl-b span{font-size:11.5px;color:var(--muted)}
+.tl-item.future .tl-b b{color:var(--muted);font-weight:500}
+.act{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.act:last-child{border:0}
+.act p{margin:0;font-size:13px;font-weight:500}
+.act span{font-size:11.5px;color:var(--muted)}
+.bar-row{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+.bar-row .nm{width:112px;font-size:12.5px;flex:none}
+.bar-track{flex:1;height:22px;background:var(--blue-light);border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,#1677E8,#0878E8);border-radius:6px;transition:width .5s;cursor:pointer}
+.bar-row .vv{width:30px;text-align:right;font-weight:700;font-size:12.5px}
+.legend{display:flex;flex-direction:column;gap:9px}
+.legend div{display:flex;align-items:center;gap:9px;font-size:12.5px}
+.legend i{width:9px;height:9px;border-radius:3px;flex:none}
+.legend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.steps{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.step{flex:1;min-width:120px;padding:11px 13px;border-radius:11px;background:var(--surface);border:1px solid var(--border);font-size:12.5px;display:flex;gap:9px;align-items:center}
+.step i{width:21px;height:21px;border-radius:50%;background:var(--border);color:var(--muted);display:grid;place-items:center;font-size:11px;font-style:normal;font-weight:700;flex:none}
+.step.on{border-color:var(--blue);background:var(--blue-light);color:var(--navy);font-weight:600}
+.step.on i{background:var(--blue);color:#fff}
+.step.done i{background:var(--green);color:#fff}
+.drop{border:2px dashed var(--border);border-radius:14px;padding:44px 20px;text-align:center;background:var(--blue-light);cursor:pointer;transition:border-color .15s}
+.drop.over{border-color:var(--blue);background:color-mix(in srgb,var(--blue-light) 70%,var(--blue))}
+.drop h4{font-size:16px;margin:12px 0 5px}
+.drop p{color:var(--muted);margin:0;font-size:12.5px}
+.file-row{display:flex;gap:12px;align-items:center;padding:13px;border:1px solid var(--border);border-radius:12px;margin-top:13px;background:var(--surface)}
+.prog{height:5px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:var(--green);width:0;transition:width .35s}
+.checkbox{display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer}
+.checkbox input{margin-top:3px;accent-color:var(--blue);width:16px;height:16px}
+.success-wrap{text-align:center;padding:38px 20px}
+.success-ico{width:78px;height:78px;border-radius:50%;background:rgba(22,167,101,.13);color:var(--green);display:grid;place-items:center;margin:0 auto 18px;animation:pop .35s ease}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.flow{display:flex;flex-direction:column;gap:9px}
+.flow-step{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;background:var(--bg);border:1px solid var(--border);font-size:13px;opacity:.45}
+.flow-step.on{opacity:1;border-color:var(--blue);background:var(--blue-light)}
+.flow-step.done{opacity:1}
+.flow-step .sp{width:18px;height:18px;border:2px solid var(--blue);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.email{border:1px solid var(--border);border-radius:13px;overflow:hidden}
+.email-h{background:var(--bg);padding:13px 16px;border-bottom:1px solid var(--border);font-size:12.5px}
+.email-b{padding:18px}
+.arch{display:flex;flex-direction:column;align-items:center;gap:6px}
+.arch-node{width:100%;max-width:330px;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);text-align:center;font-size:13px;font-weight:600;box-shadow:var(--shadow)}
+.arch-node small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.arrow{color:var(--blue);font-size:15px;line-height:1}
+.est-card{cursor:pointer;transition:transform .15s,border-color .15s}
+.est-card:hover{border-color:var(--blue);transform:translateY(-2px)}
+.est-top{height:76px;background:linear-gradient(135deg,#062B63,#0878E8);border-radius:13px 13px 0 0;padding:14px 16px;color:#fff;position:relative;overflow:hidden}
+.est-top h3{color:#fff;font-size:16px}
+.est-top span{font-size:11.5px;color:#BFD7F5}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .dh{text-align:center;font-size:11px;color:var(--muted);font-weight:600;padding:5px 0}
+.cal-day{min-height:74px;border:1px solid var(--border);border-radius:9px;padding:6px;font-size:11px}
+.cal-day.muted{opacity:.4}
+.cal-day b{font-size:11.5px;color:var(--muted)}
+.cal-ev{background:var(--blue-light);color:var(--navy);border-left:3px solid var(--blue);border-radius:5px;padding:3px 5px;margin-top:4px;font-size:10px;cursor:pointer;font-weight:600}
+.notif{display:flex;gap:13px;padding:15px 18px;border-bottom:1px solid var(--border);cursor:pointer}
+.notif:hover{background:var(--blue-light)}
+.notif.unread{background:color-mix(in srgb,var(--blue-light) 60%,transparent)}
+.notif.unread .t{font-weight:700}
+.notif .t{font-size:13.5px;margin:0}
+.notif p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex:none;margin-top:7px}
+.faq{border-bottom:1px solid var(--border)}
+.faq button{width:100%;text-align:left;padding:15px 18px;border:0;background:transparent;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;gap:12px;align-items:center}
+.faq .ans{padding:0 18px 16px;font-size:13px;color:var(--muted);display:none}
+.faq.open .ans{display:block}
+.faq.open button{color:var(--blue)}
+.player{background:#03142E;border-radius:15px;overflow:hidden;color:#fff}
+.player-stage{aspect-ratio:16/8;background:radial-gradient(circle at 30% 20%,#0A3C86,#03142E 70%);display:grid;place-items:center;position:relative;padding:20px;text-align:center}
+.player-stage h3{color:#fff;font-size:20px}
+.player-stage p{color:#9FC2EE;margin:6px 0 0;font-size:13px}
+.playbtn{width:62px;height:62px;border-radius:50%;background:var(--blue);border:0;color:#fff;display:grid;place-items:center;cursor:pointer;margin:0 auto 14px;box-shadow:0 8px 26px rgba(8,120,232,.45)}
+.player-ctrl{display:flex;align-items:center;gap:13px;padding:13px 16px;background:#02102A;border-top:1px solid rgba(255,255,255,.08)}
+.scrub{flex:1;height:5px;background:rgba(255,255,255,.16);border-radius:4px;cursor:pointer;position:relative}
+.scrub i{display:block;height:100%;background:var(--blue);border-radius:4px;width:0}
+.cue{display:flex;gap:11px;padding:8px 11px;border-radius:9px;cursor:pointer;font-size:12.5px}
+.cue:hover{background:var(--blue-light)}
+.cue.on{background:var(--blue-light);font-weight:600;color:var(--navy)}
+.cue b{font-variant-numeric:tabular-nums;color:var(--blue);flex:none}
+.road-phase{border-left:3px solid var(--blue);padding-left:16px;margin-bottom:22px}
+.road-phase h4{font-size:14.5px}
+.road-phase .wk{font-size:11.5px;color:var(--blue);font-weight:600}
+.road-phase ul{margin:9px 0 0;padding-left:17px;color:var(--muted);font-size:12.5px}
+.road-phase li{margin-bottom:4px}
+.qa{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;cursor:pointer;text-align:left;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);transition:border-color .15s,transform .15s}
+.qa:hover{border-color:var(--blue);transform:translateY(-2px)}
+.qa b{font-size:13.5px}
+.qa span{font-size:12px;color:var(--muted)}
+.mobile-only{display:none}
+footer.app-foot{border-top:1px solid var(--border);padding:22px 24px;color:var(--muted);font-size:12px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--surface)}
+footer.app-foot b{font-family:Manrope;letter-spacing:.13em;color:var(--text)}
+.tip{position:fixed;background:var(--navy-dark);color:#fff;padding:6px 10px;border-radius:7px;font-size:11.5px;pointer-events:none;z-index:300;display:none;white-space:nowrap}
+
+@media (max-width:1200px){.g6{grid-template-columns:repeat(3,1fr)}.g5{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:1000px){
+  :root{--sidebar-w:0px}
+  #login{grid-template-columns:1fr}
+  .login-art{display:none}
+  .sidebar{transform:translateX(-100%);width:252px;transition:transform .2s}
+  body.nav-open .sidebar{transform:none;box-shadow:0 0 0 100vmax rgba(3,30,70,.45)}
+  .main{margin-left:0}
+  .mobile-only{display:inline-grid}
+  .searchbox{display:none}
+  .g21,.g3,.g2,.g6,.g5,.g4{grid-template-columns:1fr}
+  .userchip b,.userchip span{display:none}
+  .qsel{display:none}
+  .dl{grid-template-columns:1fr}
+  .page{padding:18px 15px 50px}
+}
+</style>
+</head>
+<body>
+<div id="login"></div>
+<div id="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+    <div class="page" id="page"></div>
+    <footer class="app-foot">
+      <b>ITMC</b>
+      <span>Vendor Management System — Secure. Efficient. Connected.</span>
+      <span style="margin-left:auto">© 2025 ITMC. All rights reserved.</span>
+    </footer>
+  </div>
+</div>
+<div id="layer"></div>
+<div class="toast-wrap" id="toasts"></div>
+<div class="tip" id="tip"></div>
+<script>
+/* ============ ICONS ============ */
+const ICONS={
+ dashboard:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+ user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+ file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ checkc:'<circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+ card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+ calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>',
+ building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10 22v-3h4v3"/>',
+ bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+ folder:'<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>',
+ clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/>',
+ help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+ lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',
+ cloud:'<path d="M12 13v8M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 14.9"/>',
+ chevd:'<path d="m6 9 6 6 6-6"/>',
+ chevr:'<path d="m9 6 6 6-6 6"/>',
+ x:'<path d="M18 6 6 18M6 6l12 12"/>',
+ dots:'<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>',
+ trend:'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ alert:'<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>',
+ download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+ eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+ play:'<path d="M6 4v16l14-8z" fill="currentColor" stroke="none"/>',
+ pause:'<rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/>',
+ mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/>',
+ filter:'<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+ peso:'<path d="M8 20V4h5a4.5 4.5 0 0 1 0 9H8"/><path d="M5 9h9M5 12.5h9"/>',
+ menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',
+ volume:'<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/>',
+ expand:'<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',
+ send:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>',
+ sheet:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',
+ drive:'<path d="m12 3 7 12H5z"/><path d="m8.5 15-3 6M15.5 15l3 6M5 21h14"/>',
+ refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>'
+};
+function ic(n,s,c){return `<svg width="${s||18}" height="${s||18}" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||''}</svg>`}
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s);
+const peso=n=>'₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pesoShort=n=>'₱'+(n>=1e6?(n/1e6).toFixed(2)+'M':n.toLocaleString('en-PH'));
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fdate=d=>d?`${MON[d.getMonth()]} ${String(d.getDate()).padStart(2,'0')}, ${d.getFullYear()}`:'—';
+const iso=d=>d?d.toISOString().slice(0,10):'';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const key=s=>s.toLowerCase().replace(/[^a-z]/g,'');
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* ============ MASTER DATA (simulated Google Sheets) ============ */
+const ESTATES=['McKinley Hill','McKinley West','Uptown Bonifacio'];
+const STATUSES=['Submitted','Under Review','For Approval','Approved','For Processing','Returned / On Hold','Paid'];
+const STAGE_ORDER=['Submitted','Under Review','For Approval','Approved','Payment Processing','Scheduled for Payment','Paid'];
+
+const VENDORS=[
+ {vendorId:'V-000710',vendorName:'Maninvest General Services',tin:'412-556-873-000',contactPerson:'Ramon P. Villareal',email:'billing@maninvestgs.com.ph',phone:'+63 917 402 8815',address:'Unit 5B Sunshine Plaza, McKinley Road, Taguig City',assignedEstates:ESTATES},
+ {vendorId:'V-000318',vendorName:'MegaBuild Industries',tin:'221-889-004-000',contactPerson:'Rafael Cruz',email:'ap@megabuild.ph',assignedEstates:['McKinley West','Uptown Bonifacio']},
+ {vendorId:'V-000402',vendorName:'PrimeWorks Co.',tin:'334-112-556-000',contactPerson:'Janine Reyes',email:'accounts@primeworks.ph',assignedEstates:['McKinley Hill']},
+ {vendorId:'V-000511',vendorName:'Skyline Builders Inc.',tin:'447-330-221-000',contactPerson:'Dennis Yu',email:'finance@skylinebuilders.ph',assignedEstates:['Uptown Bonifacio']},
+ {vendorId:'V-000644',vendorName:'Horizon Construction',tin:'559-771-330-000',contactPerson:'Alex Tan',email:'billing@horizoncon.ph',assignedEstates:['McKinley West']}
+];
+
+const PROJECTS={
+ 'McKinley Hill':['Grounds Maintenance – Manpower Deployment','Landscaping Equipment Rental','Janitorial Supplies – Monthly Replenishment','Streetscape Upkeep – Manpower Pool','Pest Control Services'],
+ 'McKinley West':['Grounds Maintenance – Manpower Deployment','Perimeter Landscaping Services','Waste Management Equipment Rental','Janitorial Supplies – Monthly Replenishment','Horticulture Manpower Support'],
+ 'Uptown Bonifacio':['Grounds Maintenance – Manpower Deployment','Common Area Janitorial Services','Landscaping Equipment Rental','Facilities Supplies – Monthly Replenishment','Grounds Equipment Maintenance']
+};
+
+function buildInvoices(){
+  const featured=[
+   ['INV-2025-0448','McKinley Hill','Grounds Maintenance – Manpower Deployment (Q2)','2025-05-28',486000,'Approved','2025-06-10','PO00981'],
+   ['INV-2025-0447','McKinley West','Landscaping Equipment Rental – May 2025','2025-05-26',312000,'For Approval','2025-06-15','PO00967'],
+   ['INV-2025-0446','Uptown Bonifacio','Janitorial Supplies – Monthly Replenishment','2025-05-24',198500,'For Processing','2025-06-20','PO00944'],
+   ['INV-2025-0445','McKinley Hill','Perimeter Landscaping Services','2025-05-22',275000,'Approved','2025-06-05','PO00921'],
+   ['INV-2025-0444','McKinley West','Grounds Equipment Maintenance','2025-05-20',142000,'Returned / On Hold','','PO00907']
+  ];
+  const list=featured.map((f,i)=>({
+    invoiceId:'ID-'+(9000+i),invoiceNumber:f[0],vendorId:'V-000710',vendorName:'Maninvest General Services',tin:'412-556-873-000',
+    estate:f[1],project:f[2],invoiceDate:new Date(f[3]),billingPeriod:'May 1 – May 31, 2025',amount:f[4],poNumber:f[7],
+    status:f[5],submissionDate:new Date(f[3]),expectedPaymentDate:f[6]?new Date(f[6]):null,
+    documents:['Billing Statement.pdf','Statement of Work Accomplished.pdf','Official Receipt.pdf']
+  }));
+  // remaining 123 invoices for the demo vendor
+  const estPool=[],stPool=[];
+  const estCounts={'McKinley Hill':46,'McKinley West':41,'Uptown Bonifacio':36};
+  const stCounts={'Approved':74,'For Approval':33,'For Processing':11,'Returned / On Hold':5};
+  for(const k in estCounts)for(let i=0;i<estCounts[k];i++)estPool.push(k);
+  for(const k in stCounts)for(let i=0;i<stCounts[k];i++)stPool.push(k);
+  const r=rng(20250603);
+  const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  shuffle(estPool);shuffle(stPool);
+  const TARGET=18750000, featSum=1413500;
+  let raw=[],sum=0;
+  for(let i=0;i<123;i++){const v=Math.round((40000+r()*220000)/50)*50;raw.push(v);sum+=v}
+  const scale=(TARGET-featSum)/sum; let running=0;
+  raw=raw.map((v,i)=>{let x=Math.round(v*scale/50)*50;running+=x;return x});
+  raw[raw.length-1]+= (TARGET-featSum-running);
+  for(let i=0;i<123;i++){
+    const est=estPool[i],st=stPool[i];
+    const projs=PROJECTS[est];
+    const num=443-i;
+    const day=Math.floor(r()*58);
+    const d=new Date(2025,3,1+day);
+    const paid=(st==='Approved'&&r()<0.55);
+    const exp=new Date(d);exp.setDate(exp.getDate()+18+Math.floor(r()*14));
+    list.push({
+      invoiceId:'ID-'+(9100+i),invoiceNumber:'INV-2025-'+String(num).padStart(4,'0'),vendorId:'V-000710',
+      vendorName:'Maninvest General Services',tin:'412-556-873-000',estate:est,project:projs[Math.floor(r()*projs.length)],
+      invoiceDate:d,billingPeriod:MON[d.getMonth()]+' 1 – '+MON[d.getMonth()]+' 30, 2025',amount:raw[i],
+      poNumber:'PO00'+(300+Math.floor(r()*650)),status:st,submissionDate:d,
+      expectedPaymentDate:st==='Returned / On Hold'?null:exp,paidOn:paid?exp:null,
+      documents:['Billing Statement.pdf','Statement of Work Accomplished.pdf']
+    });
+  }
+  // other vendors' records — present in the master sheet, never shown to this vendor
+  VENDORS.slice(1).forEach((v,vi)=>{
+    for(let i=0;i<8;i++){
+      const est=v.assignedEstates[i%v.assignedEstates.length];
+      const d=new Date(2025,3,2+Math.floor(r()*55));
+      list.push({invoiceId:'ID-'+(8000+vi*20+i),invoiceNumber:'INV-2025-'+String(100+vi*20+i).padStart(4,'0'),
+        vendorId:v.vendorId,vendorName:v.vendorName,tin:v.tin,estate:est,project:PROJECTS[est][0],
+        invoiceDate:d,billingPeriod:'Q2 2025',amount:Math.round((200000+r()*900000)/50)*50,poNumber:'PO00'+(200+i),
+        status:STATUSES[Math.floor(r()*5)],submissionDate:d,expectedPaymentDate:d,documents:[]});
+    }
+  });
+  return list;
+}
+const MASTER_SHEET=buildInvoices();
+
+const PURCHASE_ORDERS=[
+ {po:'PO00123',date:'2025-05-05',desc:'Grounds Manpower Complement – June',amount:280000,estate:'Uptown Bonifacio'},
+ {po:'PO00657',date:'2025-05-28',desc:'Janitorial Supplies Package',amount:210000,estate:'Uptown Bonifacio'},
+ {po:'PO00921',date:'2025-04-18',desc:'Landscaping Equipment – Phase 2',amount:320000,estate:'McKinley Hill'},
+ {po:'PO00944',date:'2025-05-02',desc:'Facilities Supplies Package',amount:225000,estate:'Uptown Bonifacio'},
+ {po:'PO00967',date:'2025-05-09',desc:'Grounds Equipment Rental – Q2',amount:340000,estate:'McKinley West'},
+ {po:'PO00981',date:'2025-05-12',desc:'Manpower Deployment – Tower B Grounds',amount:520000,estate:'McKinley Hill'}
+];
+
+let NOTIFICATIONS=[
+ {id:1,cat:'Submission',title:'Billing statement submitted',body:'INV-2025-0448 • McKinley Hill • ₱486,000.00',time:'2 hours ago',read:false,icon:'send',color:'--blue'},
+ {id:2,cat:'Approval',title:'Invoice approved',body:'INV-2025-0446 • Uptown Bonifacio has cleared procurement review.',time:'4 hours ago',read:false,icon:'checkc',color:'--green'},
+ {id:3,cat:'Payment',title:'Payment scheduled',body:'INV-2025-0445 • McKinley Hill is scheduled for disbursement on Jun 05, 2025.',time:'6 hours ago',read:false,icon:'calendar',color:'--purple'},
+ {id:4,cat:'Action required',title:'Document returned',body:'INV-2025-0443 • McKinley West — attach the signed work accomplishment report.',time:'8 hours ago',read:true,icon:'alert',color:'--red'},
+ {id:5,cat:'Payment',title:'Payment released',body:'PAY-2025-0388 • ₱1,120,400.00 credited via bank transfer.',time:'Yesterday',read:true,icon:'card',color:'--green'},
+ {id:6,cat:'Submission',title:'New invoice received',body:'INV-2025-0449 • Uptown Bonifacio recorded in the master sheet.',time:'2 days ago',read:true,icon:'file',color:'--blue'}
+];
+
+const ACTIVITY=[
+ {t:'Invoice INV-2025-0448 submitted',s:'McKinley Hill • Maninvest General Services',w:'2 hours ago',i:'send',c:'--blue'},
+ {t:'Invoice approved',s:'INV-2025-0446 • Uptown Bonifacio',w:'4 hours ago',i:'checkc',c:'--green'},
+ {t:'Payment scheduled',s:'INV-2025-0445 • McKinley Hill',w:'6 hours ago',i:'calendar',c:'--purple'},
+ {t:'Document returned',s:'INV-2025-0443 • McKinley West',w:'8 hours ago',i:'alert',c:'--red'},
+ {t:'New invoice received',s:'INV-2025-0449 • Uptown Bonifacio',w:'10 hours ago',i:'file',c:'--blue'}
+];
+
+/* ============ SESSION + VENDOR FILTERING ============ */
+/* MASTER SHEET -> filter by authenticated vendor TIN -> filtered vendor data -> dashboard */
+const S={page:'dashboard',vendor:null,invoices:[],payments:[],submit:null,filters:{},drafts:[],docs:[]};
+
+function authenticate(input){
+  const q=input.trim().toLowerCase();
+  if(!q)return null;
+  return VENDORS[0] && (q===VENDORS[0].vendorName.toLowerCase()||q===VENDORS[0].tin||q==='maninvest general services'||q===VENDORS[0].vendorId.toLowerCase())?VENDORS[0]:null;
+}
+function loadVendorData(vendor){
+  S.invoices=MASTER_SHEET.filter(i=>i.tin===vendor.tin&&i.vendorId===vendor.vendorId);
+  S.payments=S.invoices.filter(i=>i.expectedPaymentDate).map((i,n)=>({
+    paymentId:'PAY-2025-'+String(300+n).padStart(4,'0'),invoiceNumber:i.invoiceNumber,estate:i.estate,
+    paymentDate:i.paidOn||i.expectedPaymentDate,amount:i.amount,
+    status:i.paidOn?'Paid':(i.status==='Approved'?'Scheduled':'Processing'),
+    method:i.paidOn?'Bank transfer':'Bank transfer',referenceNumber:'REF-'+i.invoiceNumber.slice(-4)+'-25'
+  })).sort((a,b)=>b.paymentDate-a.paymentDate);
+  S.docs=S.invoices.slice(0,26).flatMap(i=>i.documents.map((d,k)=>({
+    name:d.replace('.pdf',' – '+i.invoiceNumber+'.pdf'),invoice:i.invoiceNumber,estate:i.estate,
+    date:i.submissionDate,type:'PDF',size:(0.4+((k+1)*0.7)).toFixed(1)+' MB',
+    cat:k===0?'Billing Statements':k===1?'Supporting Documents':'Payment Documents'
+  })));
+}
+function byStatus(st){return S.invoices.filter(i=>i.status===st).length}
+function totalAmount(){return S.invoices.reduce((a,b)=>a+b.amount,0)}
+/* ============ UI UTILITIES ============ */
+function toast(msg,kind){
+  const w=$('#toasts'),d=document.createElement('div');
+  d.className='toast';
+  d.innerHTML=`<span class="${kind==='ok'?'ok':''}">${ic(kind==='ok'?'checkc':kind==='warn'?'alert':'bell',18)}</span><span>${msg}</span>`;
+  w.appendChild(d);setTimeout(()=>{d.style.opacity='0';d.style.transform='translateY(8px)';setTimeout(()=>d.remove(),250)},3600);
+}
+function closeLayer(){$('#layer').innerHTML='';document.body.style.overflow=''}
+function openDrawer(html){
+  $('#layer').innerHTML=`<div class="overlay" data-close="1"><div class="drawer">${html}</div></div>`;
+  document.body.style.overflow='hidden';
+}
+function openModal(html){
+  $('#layer').innerHTML=`<div class="overlay modal-center" data-close="1"><div class="modal">${html}</div></div>`;
+  document.body.style.overflow='hidden';
+}
+document.addEventListener('click',e=>{
+  if(e.target.dataset && e.target.dataset.close)closeLayer();
+  if(!e.target.closest('.menu'))document.querySelectorAll('.menu-pop').forEach(m=>m.remove());
+  if(!e.target.closest('.searchbox')){const r=$('#sres');if(r)r.style.display='none'}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLayer()});
+function tipOn(el,text){
+  el.addEventListener('mousemove',ev=>{const t=$('#tip');t.textContent=text;t.style.display='block';t.style.left=(ev.clientX+12)+'px';t.style.top=(ev.clientY-32)+'px'});
+  el.addEventListener('mouseleave',()=>{$('#tip').style.display='none'});
+}
+
+/* ============ LOGIN ============ */
+function renderLogin(){
+  $('#login').innerHTML=`
+  <div class="login-art">
+    <svg class="skyline" viewBox="0 0 800 220" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="#0A3C86">
+        <rect x="20" y="120" width="54" height="100"/><rect x="84" y="80" width="40" height="140"/>
+        <rect x="134" y="140" width="62" height="80"/><rect x="206" y="52" width="46" height="168"/>
+        <rect x="262" y="104" width="70" height="116"/><rect x="342" y="30" width="38" height="190"/>
+        <rect x="390" y="126" width="58" height="94"/><rect x="458" y="70" width="44" height="150"/>
+        <rect x="512" y="150" width="76" height="70"/><rect x="598" y="96" width="42" height="124"/>
+        <rect x="650" y="132" width="64" height="88"/><rect x="724" y="64" width="46" height="156"/>
+      </g>
+      <g fill="#1677E8" opacity=".55">
+        <rect x="92" y="96" width="6" height="8"/><rect x="106" y="96" width="6" height="8"/>
+        <rect x="214" y="70" width="6" height="8"/><rect x="230" y="70" width="6" height="8"/>
+        <rect x="350" y="48" width="6" height="8"/><rect x="466" y="88" width="6" height="8"/>
+        <rect x="732" y="82" width="6" height="8"/>
+      </g>
+    </svg>
+    <div class="brandmark"><span class="mk">I</span>ITMC</div>
+    <div>
+      <h1>One portal for every estate you build in.</h1>
+      <p>Submit billing statements, follow each approval stage and see exactly when payment lands — across McKinley Hill, McKinley West and Uptown Bonifacio.</p>
+    </div>
+    <div class="trust">
+      <div><strong>3</strong>Estates connected</div>
+      <div><strong>2.3 days</strong>Average approval time</div>
+      <div><strong>92%</strong>Payments on schedule</div>
+    </div>
+  </div>
+  <div class="login-form">
+    <div class="login-card">
+      <div class="row" style="margin-bottom:18px">
+        <div class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('shield',20)}</div>
+        <div><div style="font-family:Manrope;font-weight:800;letter-spacing:.12em;font-size:12px">ITMC</div>
+        <div style="font-size:12px;color:var(--muted)">Vendor Management System</div></div>
+      </div>
+      <h2>Access your vendor account</h2>
+      <p style="color:var(--muted);margin:0;font-size:13px">Enter your registered TIN or trade name to open your dedicated vendor portal.</p>
+      <div class="field">
+        <label for="tin">TIN / Trade name <span class="req">*</span></label>
+        <input id="tin" type="text" placeholder="Enter TIN or trade name" autocomplete="off">
+        <div class="error-msg" id="loginErr">We can't find that record. Check your TIN or trade name, or contact your township procurement team.</div>
+      </div>
+      <button class="btn block" id="loginBtn">Continue ${ic('chevr',16)}</button>
+      <div class="note">${ic('lock',15)}<span>Your information is protected and access is restricted to authorized vendor records.</span></div>
+      <div class="hint">Demo access — use <code>Maninvest General Services</code> or <code>412-556-873-000</code></div>
+    </div>
+  </div>`;
+  $('#loginBtn').onclick=doLogin;
+  $('#tin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+}
+function doLogin(){
+  const v=authenticate($('#tin').value);
+  if(!v){$('#loginErr').style.display='block';return}
+  const b=$('#loginBtn');b.disabled=true;b.innerHTML='Verifying vendor record…';
+  setTimeout(()=>{
+    S.vendor=v;loadVendorData(v);
+    $('#login').style.display='none';$('#app').style.display='block';
+    renderShell();go('dashboard');
+    toast('Signed in as '+v.vendorName,'ok');
+  },650);
+}
+
+/* ============ SHELL ============ */
+const NAV=[
+ ['dashboard','Dashboard','dashboard'],['profile','My Profile','user'],['invoices','Invoices','file'],
+ ['tracker','Approval Tracker','checkc'],['history','Payment History','card'],['schedule','Payment Schedule','calendar'],
+ ['directory','Vendor Directory','users'],['estates','Estates Overview','building'],['notifications','Notifications','bell'],
+ ['documents','Documents & Files','folder'],['forms','Forms','clipboard'],['support','Support & Help','help']
+];
+const TITLES={dashboard:['Vendor Management System','One portal. All vendors. Complete visibility.'],
+ profile:['My Profile','Your company record as registered with Megaworld.'],
+ invoices:['My Invoices','Every billing statement you have filed across your three assigned estates.'],
+ submit:['Submit Billing Statement','Submit your billing documents securely for review and processing.'],
+ tracker:['Approval Tracker','Follow each invoice from submission through to payment.'],
+ history:['Payment History','Disbursements already released to your account.'],
+ schedule:['Payment Schedule','Upcoming disbursements by date.'],
+ directory:['Vendor Directory','Your registered vendor record and estate assignments.'],
+ estates:['Estates Overview','Billing activity per estate.'],
+ notifications:['Notifications','Updates on submissions, approvals and payments.'],
+ documents:['Documents & Files','Your secure document library.'],
+ forms:['Forms','Vendor forms and requests.'],
+ support:['Support & Help','Answers and a direct line to procurement.']};
+
+function renderShell(){
+  $('#sidebar').innerHTML=`
+   <div class="logo brandmark"><span class="mk">I</span>ITMC</div>
+   <nav class="nav" id="nav"></nav>
+   <div class="secure-badge">${ic('shield',16)} <strong style="margin-top:4px">Secure portal</strong>Your data is protected and access is limited to your own vendor records.</div>
+   <div class="side-foot"><b>ITMC</b>BUILDING BETTER TOMORROWS</div>`;
+  renderNav();
+  $('#topbar').innerHTML=`
+   <button class="iconbtn mobile-only" id="menuBtn">${ic('menu',18)}</button>
+   <div><h2 id="ttl"></h2><div class="sub" id="sub"></div></div>
+   <div class="spacer"></div>
+   <div class="searchbox">${ic('search',16)}<input id="gsearch" type="text" placeholder="Search invoices, POs, estates…" autocomplete="off"><div class="search-results" id="sres"></div></div>
+   <button class="qsel" id="qsel" title="Billing quarter"><b>2nd Quarter 2025</b><span>Apr 1 – Jun 30, 2025</span></button>
+   <button class="iconbtn" id="bellBtn">${ic('bell',18)}<span class="dot" id="bellCount">3</span></button>
+   <button class="userchip" id="userBtn">
+     <span class="avatar">MG</span>
+     <span><b>${S.vendor.vendorName}</b><span>${S.vendor.vendorId}</span></span>
+     ${ic('chevd',15)}
+   </button>`;
+  $('#menuBtn').onclick=()=>document.body.classList.toggle('nav-open');
+  $('#bellBtn').onclick=()=>go('notifications');
+  $('#qsel').onclick=()=>toast('Quarter filter is fixed to Q2 2025 in this prototype.');
+  $('#userBtn').onclick=e=>{e.stopPropagation();userMenu()};
+  const gs=$('#gsearch');
+  gs.addEventListener('input',()=>globalSearch(gs.value));
+  gs.addEventListener('focus',()=>globalSearch(gs.value));
+}
+function renderNav(){
+  const unread=NOTIFICATIONS.filter(n=>!n.read).length;
+  $('#nav').innerHTML=NAV.map(([id,label,icon])=>
+    `<button data-go="${id}" class="${S.page===id?'active':''}">${ic(icon,17)}<span>${label}</span>${id==='notifications'&&unread?`<span class="badge">${unread}</span>`:''}</button>`).join('');
+  $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{go(b.dataset.go);document.body.classList.remove('nav-open')});
+  const c=$('#bellCount');if(c){c.style.display=unread?'grid':'none';c.textContent=unread}
+}
+function userMenu(){
+  document.querySelectorAll('.menu-pop').forEach(m=>m.remove());
+  const chip=$('#userBtn');
+  const pop=document.createElement('div');pop.className='menu-pop';pop.style.position='absolute';pop.style.right='24px';pop.style.top='62px';
+  pop.innerHTML=`<button data-a="profile">My profile</button><button data-a="notif">Notification settings</button><button data-a="theme">Switch appearance</button><button data-a="out">Sign out</button>`;
+  document.body.appendChild(pop);
+  pop.onclick=e=>{const a=e.target.dataset.a;if(!a)return;pop.remove();
+    if(a==='profile'||a==='notif')go('profile');
+    if(a==='theme'){const cur=document.documentElement.getAttribute('data-theme');document.documentElement.setAttribute('data-theme',cur==='dark'?'light':'dark')}
+    if(a==='out'){location.reload()}};
+}
+function globalSearch(q){
+  const box=$('#sres');q=q.trim().toLowerCase();
+  if(q.length<2){box.style.display='none';return}
+  const hits=S.invoices.filter(i=>
+    i.invoiceNumber.toLowerCase().includes(q)||i.estate.toLowerCase().includes(q)||
+    i.project.toLowerCase().includes(q)||i.status.toLowerCase().includes(q)||i.poNumber.toLowerCase().includes(q)).slice(0,8);
+  if(!hits.length){box.innerHTML='<div style="padding:14px;font-size:12.5px;color:var(--muted)">No records match “'+esc(q)+'”.</div>';box.style.display='block';return}
+  box.innerHTML=hits.map(i=>`<button data-inv="${i.invoiceNumber}"><b>${i.invoiceNumber}</b> · ${i.estate}<br><span style="color:var(--muted)">${esc(i.project)} — ${peso(i.amount)}</span></button>`).join('');
+  box.style.display='block';
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{box.style.display='none';$('#gsearch').value='';openInvoice(b.dataset.inv)});
+}
+function go(page,opts){
+  S.page=page;S.opts=opts||{};
+  renderNav();
+  const t=TITLES[page]||['',''];
+  $('#ttl').textContent=t[0];$('#sub').textContent=t[1];
+  window.scrollTo({top:0});
+  const el=$('#page');
+  el.innerHTML='<div class="grid g3"><div class="card skel" style="height:110px"></div><div class="card skel" style="height:110px"></div><div class="card skel" style="height:110px"></div></div>';
+  setTimeout(()=>{(PAGES[page]||PAGES.dashboard)(el)},120);
+}
+/* ============ SHARED COMPONENTS ============ */
+const PAGES={};
+function kpi(label,val,meta,icon,color,money){
+  return `<div class="card kpi">
+   <div class="top"><span class="label">${label}</span>
+   <span class="ico" style="background:color-mix(in srgb,var(${color}) 14%,transparent);color:var(${color})">${ic(icon,18)}</span></div>
+   <div class="val ${money?'money':''}">${val}</div><div class="meta">${meta}</div></div>`;
+}
+function statusPill(s){return `<span class="pill p-${key(s)}">${s}</span>`}
+function donut(data,total){
+  const R=62,C=2*Math.PI*R;let off=0;
+  const arcs=data.map(d=>{
+    const frac=d.v/total,len=C*frac;
+    const s=`<circle r="${R}" cx="80" cy="80" fill="none" stroke="var(${d.c})" stroke-width="22"
+      stroke-dasharray="${len-2} ${C-len+2}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"
+      class="arc" data-label="${d.k}: ${d.v} (${(frac*100).toFixed(1)}%)" style="cursor:pointer;transition:opacity .15s"/>`;
+    off+=len;return s}).join('');
+  return `<div class="row" style="gap:26px;flex-wrap:nowrap;align-items:center">
+   <svg viewBox="0 0 160 160" width="164" height="164" style="flex:none">${arcs}
+    <text x="80" y="74" text-anchor="middle" font-size="27" font-weight="800" fill="var(--text)" font-family="Manrope">${total}</text>
+    <text x="80" y="94" text-anchor="middle" font-size="11" fill="var(--muted)">invoices</text></svg>
+   <div class="legend" style="flex:1">${data.map(d=>
+     `<div><i style="background:var(${d.c})"></i>${d.k}<b>${d.v} · ${(d.v/total*100).toFixed(1)}%</b></div>`).join('')}</div></div>`;
+}
+function barChart(rows,max){
+  return rows.map(r=>`<div class="bar-row"><span class="nm">${r.k}</span>
+   <span class="bar-track"><i class="bar-fill" data-label="${r.k}: ${r.v} invoices · ${pesoShort(r.amt||0)}" style="width:${(r.v/max*100).toFixed(1)}%"></i></span>
+   <span class="vv">${r.v}</span></div>`).join('');
+}
+function wireCharts(root){
+  root.querySelectorAll('[data-label]').forEach(el=>{tipOn(el,el.dataset.label);
+    el.addEventListener('mouseenter',()=>el.style.opacity='.78');
+    el.addEventListener('mouseleave',()=>el.style.opacity='1')});
+}
+function invoiceRows(list){
+  if(!list.length)return `<tr><td colspan="8"><div class="empty"><h4>No invoices match these filters</h4><p>Clear a filter or widen the date range to see results.</p></div></td></tr>`;
+  return list.map(i=>`<tr>
+   <td class="mono">${i.invoiceNumber}</td><td>${i.estate}</td><td>${esc(i.project)}</td>
+   <td>${fdate(i.invoiceDate)}</td><td class="amt">${peso(i.amount)}</td><td>${statusPill(i.status)}</td>
+   <td>${fdate(i.expectedPaymentDate)}</td>
+   <td style="white-space:nowrap"><button class="linkbtn" data-view="${i.invoiceNumber}">VIEW</button>
+   <span class="menu"><button class="linkbtn" data-menu="${i.invoiceNumber}">${ic('dots',15)}</button></span></td></tr>`).join('');
+}
+function wireInvoiceTable(root){
+  root.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>openInvoice(b.dataset.view));
+  root.querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();document.querySelectorAll('.menu-pop').forEach(m=>m.remove());
+    const pop=document.createElement('div');pop.className='menu-pop';
+    pop.innerHTML=`<button data-a="view">View details</button><button data-a="track">Open approval tracker</button><button data-a="dl">Download billing statement</button><button data-a="copy">Copy invoice number</button>`;
+    b.closest('.menu').appendChild(pop);
+    pop.onclick=ev=>{const a=ev.target.dataset.a;pop.remove();
+      if(a==='view')openInvoice(b.dataset.menu);
+      if(a==='track')go('tracker',{focus:b.dataset.menu});
+      if(a==='dl')toast('Downloading '+b.dataset.menu+' from Drive…','ok');
+      if(a==='copy'){navigator.clipboard&&navigator.clipboard.writeText(b.dataset.menu);toast('Invoice number copied.')}};
+  });
+}
+function stageIndex(status){
+  if(status==='Returned / On Hold')return 1;
+  return {'Submitted':0,'Under Review':1,'For Approval':2,'Approved':3,'For Processing':4,'Scheduled':5,'Paid':6}[status]??2;
+}
+function openInvoice(no){
+  const i=S.invoices.find(x=>x.invoiceNumber===no);if(!i)return;
+  const idx=stageIndex(i.status),returned=i.status==='Returned / On Hold';
+  const tl=STAGE_ORDER.map((s,n)=>{
+    const cls=n<idx?'done':n===idx?'now':'future';
+    const when=n<=idx?fdate(new Date(i.submissionDate.getTime()+n*86400000*1.5)):'Pending';
+    return `<div class="tl-item ${cls}"><span class="tl-dot">${n<idx?ic('check',13):n+1}</span>
+     <span class="tl-b"><b>${s}</b><span>${when}</span></span></div>`}).join('');
+  openDrawer(`
+   <div class="drawer-h"><div>${ic('file',20)}</div><div><h3>${i.invoiceNumber}</h3><p>${i.estate} • ${esc(i.project)}</p></div>
+   <button class="x" data-close="1">✕</button></div>
+   <div style="padding:20px" class="stack">
+    ${returned?`<div class="card" style="border-color:var(--red);background:rgba(231,76,76,.07)"><div class="card-b row" style="gap:11px;flex-wrap:nowrap">
+      <span style="color:var(--red)">${ic('alert',20)}</span><div><b>Returned for correction</b><div style="font-size:12.5px;color:var(--muted)">Attach the signed statement of work accomplished, then resubmit. The original submission date is retained.</div></div></div></div>`:''}
+    <div class="row" style="justify-content:space-between">${statusPill(i.status)}<span class="amt" style="font-size:19px;font-family:Manrope">${peso(i.amount)}</span></div>
+    <div class="dl">
+     <div><dt>Vendor</dt><dd>${i.vendorName}</dd></div><div><dt>TIN</dt><dd>${i.tin}</dd></div>
+     <div><dt>Estate / township</dt><dd>${i.estate}</dd></div><div><dt>Purchase order</dt><dd>${i.poNumber}</dd></div>
+     <div><dt>Project / work description</dt><dd>${esc(i.project)}</dd></div><div><dt>Billing period</dt><dd>${i.billingPeriod}</dd></div>
+     <div><dt>Invoice date</dt><dd>${fdate(i.invoiceDate)}</dd></div><div><dt>Submitted</dt><dd>${fdate(i.submissionDate)}</dd></div>
+     <div><dt>Expected payment</dt><dd>${fdate(i.expectedPaymentDate)}</dd></div><div><dt>Current status</dt><dd>${i.status}</dd></div>
+    </div>
+    <div class="card"><div class="card-h"><h3>Approval timeline</h3></div><div class="card-b"><div class="timeline">${tl}</div></div></div>
+    <div class="card"><div class="card-h"><h3>Attached documents</h3><p style="margin-left:auto">Stored in Drive</p></div>
+     <div class="card-b stack" style="gap:9px">${i.documents.map(d=>`<div class="row" style="flex-wrap:nowrap">
+      <span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('file',17)}</span>
+      <span style="flex:1;font-size:13px">${d}</span>
+      <button class="btn sm ghost" data-dl="${d}">Download</button></div>`).join('')}</div></div>
+    <div class="row"><button class="btn" data-track="1">Open in approval tracker</button><button class="btn ghost" data-close="1">Close</button></div>
+   </div>`);
+  $('#layer').querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>toast('Downloading '+b.dataset.dl,'ok'));
+  const tb=$('#layer').querySelector('[data-track]');if(tb)tb.onclick=()=>{closeLayer();go('tracker',{focus:no})};
+}
+
+/* ============ DASHBOARD ============ */
+PAGES.dashboard=function(el){
+  const total=S.invoices.length,appr=byStatus('Approved'),fa=byStatus('For Approval'),
+        fp=byStatus('For Processing'),ret=byStatus('Returned / On Hold'),amt=totalAmount();
+  const pct=n=>(n/total*100).toFixed(1)+'% of total';
+  const estRows=ESTATES.map(e=>({k:e,v:S.invoices.filter(i=>i.estate===e).length,
+    amt:S.invoices.filter(i=>i.estate===e).reduce((a,b)=>a+b.amount,0)})).sort((a,b)=>b.v-a.v);
+  const recent=[...S.invoices].sort((a,b)=>b.invoiceNumber.localeCompare(a.invoiceNumber)).slice(0,5);
+  el.innerHTML=`
+  <div class="card" style="margin-bottom:18px;background:linear-gradient(120deg,var(--navy-dark),#0A3C86);border:0;color:#fff">
+   <div class="card-b row" style="gap:20px">
+    <div style="flex:1;min-width:260px">
+     <h1 style="color:#fff;font-size:22px">Welcome back, ${S.vendor.vendorName}</h1>
+     <p style="color:#BFD7F5;margin:6px 0 0;max-width:68ch">Here's your consolidated view of invoices, approvals and upcoming payments across all assigned Megaworld estates.</p>
+    </div>
+    <div>
+     <div style="font-size:11.5px;color:#9FC2EE;margin-bottom:6px">3 assigned estates</div>
+     <div class="row" style="gap:6px">${ESTATES.map(e=>`<button class="chip" data-est="${e}" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff">${e}</button>`).join('')}</div>
+    </div>
+   </div>
+  </div>
+
+  <div class="grid g6" style="margin-bottom:18px">
+   ${kpi('Total invoices',total,'Across all estates · <span class="up">↑ 12% vs. last quarter</span>','file','--blue')}
+   ${kpi('Approved',appr,pct(appr),'checkc','--green')}
+   ${kpi('For approval',fa,pct(fa),'clock','--yellow')}
+   ${kpi('For processing',fp,pct(fp),'refresh','--purple')}
+   ${kpi('Returned / on hold',ret,pct(ret),'alert','--red')}
+   ${kpi('Total amount',peso(amt),'Across all estates','peso','--green',1)}
+  </div>
+
+  <div class="grid g2" style="margin-bottom:18px">
+   <div class="card"><div class="card-h"><h3>Invoices by approval stage</h3><p>Hover a segment for the exact count</p></div>
+    <div class="card-b">${donut([{k:'Approved',v:appr,c:'--green'},{k:'For approval',v:fa,c:'--yellow'},{k:'For processing',v:fp,c:'--purple'},{k:'Returned / on hold',v:ret,c:'--red'}],total)}</div></div>
+   <div class="card"><div class="card-h"><h3>Invoices by estate</h3><p>Click a bar to filter the invoice list</p></div>
+    <div class="card-b">${barChart(estRows,estRows[0].v)}</div></div>
+  </div>
+
+  <div class="grid g21" style="margin-bottom:18px">
+   <div class="card"><div class="card-h"><h3>Recent invoices</h3>
+     <button class="btn sm ghost" data-go2="invoices" style="margin-left:auto">View all invoices</button></div>
+    <div class="table-wrap"><table><thead><tr>
+     <th>Invoice no.</th><th>Estate</th><th>Project / work description</th><th>Invoice date</th><th>Amount</th><th>Approval stage</th><th>Expected payment</th><th>Actions</th>
+    </tr></thead><tbody>${invoiceRows(recent)}</tbody></table></div></div>
+   <div class="card"><div class="card-h"><h3>Recent activity</h3></div>
+    <div class="card-b"><div class="timeline">${ACTIVITY.map((a,n)=>`<div class="tl-item done" style="padding-bottom:16px">
+     <span class="tl-dot" style="background:var(${a.c})">${ic(a.i,12,'#fff')}</span>
+     <span class="tl-b"><b>${a.t}</b><span>${a.s}<br>${a.w}</span></span></div>`).join('')}</div></div></div>
+  </div>
+
+  <div class="grid g3" style="margin-bottom:18px">
+   ${kpi('On-time payments','92%','Demo data — replace with live disbursement records','checkc','--green')}
+   ${kpi('Average approval time','2.3 days','Demo data — measured from submission to approval','clock','--blue')}
+   ${kpi('Vendor satisfaction','4.8 / 5','Demo data — from the Q2 vendor survey','users','--purple')}
+  </div>
+
+  <h3 style="margin:26px 0 12px">Quick access</h3>
+  <div class="grid g5" style="margin-bottom:26px">
+   ${[['Submit billing statement','Upload an invoice and assign it to a PO','upload','submit'],
+      ['View all invoices','128 records across three estates','file','invoices'],
+      ['View estates','Billing activity per township','building','estates'],
+      ['Download reports','Export your Q2 billing summary','download','report'],
+      ['Help & support','FAQs and procurement contacts','help','support']]
+     .map(q=>`<button class="qa" data-quick="${q[3]}">
+      <span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic(q[2],18)}</span>
+      <b>${q[0]}</b><span>${q[1]}</span></button>`).join('')}
+  </div>
+
+  <div class="grid g2" style="margin-bottom:18px">
+   <div class="card"><div class="card-h"><h3>Vendor workflow demo</h3><p>A walkthrough of one billing submission, end to end</p></div>
+    <div class="card-b"><div id="player"></div></div></div>
+   <div class="card"><div class="card-h"><h3>How a submission travels</h3><p>Google Workspace automation flow</p></div>
+    <div class="card-b"><div class="arch">
+     ${[['Vendor','Submits a billing statement','user'],['Google Sites','Vendor portal container','building'],
+        ['Google Forms','Billing submission form','clipboard'],['Google Sheets','Master billing database','sheet'],
+        ['Google Apps Script','Validation and automation','refresh'],['Google Drive','Document storage','drive'],
+        ['Email notification','Sent to the assigned team','mail'],['Township admin / procurement','Reviews and approves','users']]
+      .map((n,k)=>`${k?'<div class="arrow">↓</div>':''}<div class="arch-node">${n[0]}<small>${n[1]}</small></div>`).join('')}
+    </div></div></div>
+  </div>
+
+  <div class="grid g21">
+   <div class="card"><div class="card-h"><h3>Project roadmap — Q2 2025</h3><p>Target: end of Q2 2025</p></div>
+    <div class="card-b">
+     ${[['Phase 1','System architecture & setup','Weeks 1–4',['Map multi-township vendor access permissions','Set up Google Sheets as the master database','Set up Google Drive document storage','Build the Google Forms billing submission','Design the Google Sites portal','Define the data structure and workflow'],100],
+        ['Phase 2','Automation & pilot testing','Weeks 5–9',['Develop Apps Script automation','Synchronize approval status','Automate notifications','Vendor authentication','Access control','Pilot with selected contractors'],62],
+        ['Phase 3','Deployment & go-live','Weeks 10–13',['Distribute vendor credentials','Vendor briefing and training','Final testing','Go live','Real-time disbursement tracking','Ongoing support'],8]]
+      .map(p=>`<div class="road-phase"><div class="wk">${p[0]} · ${p[2]}</div><h4>${p[1]}</h4>
+       <div class="bar-track" style="height:7px;margin:9px 0 4px"><i class="bar-fill" style="width:${p[4]}%"></i></div>
+       <div style="font-size:11.5px;color:var(--muted)">${p[4]}% complete</div>
+       <ul>${p[3].map(t=>`<li>${t}</li>`).join('')}</ul></div>`).join('')}
+    </div></div>
+   <div class="card"><div class="card-h"><h3>Top vendors</h3>
+     <button class="btn sm ghost" id="tvToggle" style="margin-left:auto">Show</button></div>
+    <div class="card-b" id="tvBody">
+     <div class="empty" style="padding:26px 10px">${ic('lock',22)}<h4 style="margin-top:10px">Hidden in vendor mode</h4>
+      <p style="font-size:12.5px">Other vendors' billing totals are confidential. This panel is available only to Megaworld internal users.</p></div>
+    </div></div>
+  </div>`;
+  wireCharts(el);wireInvoiceTable(el);
+  el.querySelectorAll('[data-est]').forEach(b=>b.onclick=()=>go('invoices',{estate:b.dataset.est}));
+  el.querySelectorAll('[data-go2]').forEach(b=>b.onclick=()=>go(b.dataset.go2));
+  el.querySelectorAll('.bar-fill[data-label]').forEach(b=>b.onclick=()=>go('invoices',{estate:b.dataset.label.split(':')[0]}));
+  el.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>{
+    const q=b.dataset.quick;
+    if(q==='report'){toast('Preparing your Q2 2025 billing summary…');setTimeout(()=>toast('Q2-2025-Billing-Summary.xlsx ready in Documents & Files.','ok'),1200);go('documents')}
+    else go(q);});
+  buildPlayer($('#player'));
+  const tv=$('#tvToggle');let shown=false;
+  tv.onclick=()=>{shown=!shown;tv.textContent=shown?'Hide':'Show';
+    $('#tvBody').innerHTML=shown?
+      `<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">Internal view — not visible to vendors in production.</div>`+
+      barChartVendors():
+      `<div class="empty" style="padding:26px 10px">${ic('lock',22)}<h4 style="margin-top:10px">Hidden in vendor mode</h4><p style="font-size:12.5px">Other vendors' billing totals are confidential. This panel is available only to Megaworld internal users.</p></div>`;
+    wireCharts($('#tvBody'));};
+};
+function barChartVendors(){
+  const rows=[['Maninvest General Services',18750000],['MegaBuild Industries',9320000],['PrimeWorks Co.',7850000],['Skyline Builders Inc.',6240000],['Horizon Construction',5780000]];
+  const max=rows[0][1];
+  return rows.map(r=>`<div class="bar-row"><span class="nm" style="width:auto;flex:1;min-width:120px">${r[0]}</span>
+   <span class="bar-track" style="flex:1"><i class="bar-fill" data-label="${r[0]}: ${peso(r[1])}" style="width:${r[1]/max*100}%"></i></span>
+   <span class="vv" style="width:62px">${pesoShort(r[1])}</span></div>`).join('');
+}
+
+/* ============ WORKFLOW DEMO PLAYER ============ */
+const CUES=[[0,'Vendor opens the portal'],[10,'Enters TIN / trade name'],[20,'Dashboard loads'],[35,'Vendor reviews billing status'],
+ [50,'Vendor clicks Submit billing statement'],[65,'Billing form opens'],[80,'Vendor enters billing details'],[95,'Vendor uploads the invoice'],
+ [105,'Vendor submits the form'],[115,'Apps Script processes the submission'],[125,'Email notification is triggered'],[135,'Dashboard status updates']];
+const DUR=145;
+function buildPlayer(root){
+  if(!root)return;let t=0,timer=null;
+  const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');
+  function cueAt(x){let c=CUES[0];CUES.forEach(k=>{if(x>=k[0])c=k});return c}
+  function paint(){
+    const c=cueAt(t);
+    root.querySelector('#stageTitle').textContent=c[1];
+    root.querySelector('#stageStep').textContent='Step '+(CUES.indexOf(c)+1)+' of '+CUES.length;
+    root.querySelector('#scrubFill').style.width=(t/DUR*100)+'%';
+    root.querySelector('#tc').textContent=fmt(t)+' / '+fmt(DUR);
+    root.querySelectorAll('.cue').forEach(el=>el.classList.toggle('on',+el.dataset.t===c[0]));
+  }
+  root.innerHTML=`<div class="player">
+    <div class="player-stage">
+     <div><button class="playbtn" id="pbtn">${ic('play',22)}</button>
+      <h3 id="stageTitle">Vendor opens the portal</h3><p id="stageStep">Step 1 of 12</p></div>
+    </div>
+    <div class="player-ctrl">
+      <button class="iconbtn" id="pbtn2" style="background:transparent;border-color:rgba(255,255,255,.2);color:#fff">${ic('play',16)}</button>
+      <span class="scrub" id="scrub"><i id="scrubFill"></i></span>
+      <span id="tc" style="font-size:11.5px;font-variant-numeric:tabular-nums;color:#9FC2EE">00:00 / 02:25</span>
+      <button class="iconbtn" style="background:transparent;border-color:rgba(255,255,255,.2);color:#fff">${ic('volume',16)}</button>
+      <button class="iconbtn" style="background:transparent;border-color:rgba(255,255,255,.2);color:#fff">${ic('expand',16)}</button>
+    </div></div>
+   <div style="margin-top:14px;max-height:190px;overflow:auto">${CUES.map(c=>`<div class="cue" data-t="${c[0]}"><b>${fmt(c[0])}</b><span>${c[1]}</span></div>`).join('')}</div>`;
+  const toggle=()=>{
+    if(timer){clearInterval(timer);timer=null;root.querySelectorAll('#pbtn,#pbtn2').forEach(b=>b.innerHTML=ic('play',b.id==='pbtn'?22:16));return}
+    root.querySelectorAll('#pbtn,#pbtn2').forEach(b=>b.innerHTML=ic('pause',b.id==='pbtn'?22:16));
+    timer=setInterval(()=>{t+=1;if(t>=DUR){t=DUR;toggle()}paint()},160);
+  };
+  root.querySelector('#pbtn').onclick=toggle;root.querySelector('#pbtn2').onclick=toggle;
+  root.querySelector('#scrub').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();t=Math.round((e.clientX-r.left)/r.width*DUR);paint()};
+  root.querySelectorAll('.cue').forEach(c=>c.onclick=()=>{t=+c.dataset.t;paint()});
+  paint();
+}
+/* ============ FILTER BAR ============ */
+function filterState(init){
+  S.filters=Object.assign({estate:'All estates',status:'All',from:'',to:'',q:'',min:''},init||{});
+}
+function filterBar(statuses){
+  const f=S.filters;
+  return `<div class="card" style="margin-bottom:16px"><div class="card-b row" style="gap:10px">
+   <span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('filter',17)}</span>
+   <input type="text" id="fq" placeholder="Invoice no., project or PO" value="${esc(f.q)}" style="width:230px">
+   <select id="festate" style="width:170px">${['All estates',...ESTATES].map(e=>`<option ${f.estate===e?'selected':''}>${e}</option>`).join('')}</select>
+   <select id="fstatus" style="width:170px">${statuses.map(s=>`<option ${f.status===s?'selected':''}>${s}</option>`).join('')}</select>
+   <input type="date" id="ffrom" value="${f.from}" style="width:150px" title="Invoice date from">
+   <input type="date" id="fto" value="${f.to}" style="width:150px" title="Invoice date to">
+   <input type="text" id="fmin" placeholder="Min amount" value="${esc(f.min)}" style="width:120px">
+   <button class="btn sm ghost" id="fclear">Clear filters</button>
+   <span style="margin-left:auto;font-size:12.5px;color:var(--muted)" id="fcount"></span>
+  </div></div>`;
+}
+function applyFilters(){
+  const f=S.filters;
+  return S.invoices.filter(i=>{
+    if(f.estate!=='All estates'&&i.estate!==f.estate)return false;
+    if(f.status!=='All'&&i.status!==f.status)return false;
+    if(f.from&&iso(i.invoiceDate)<f.from)return false;
+    if(f.to&&iso(i.invoiceDate)>f.to)return false;
+    if(f.min&&i.amount<Number(String(f.min).replace(/[^\d]/g,'')||0))return false;
+    if(f.q){const q=f.q.toLowerCase();
+      if(!(i.invoiceNumber.toLowerCase().includes(q)||i.project.toLowerCase().includes(q)||i.poNumber.toLowerCase().includes(q)||i.estate.toLowerCase().includes(q)))return false}
+    return true;
+  }).sort((a,b)=>b.invoiceNumber.localeCompare(a.invoiceNumber));
+}
+function wireFilters(rerender){
+  const map={fq:'q',festate:'estate',fstatus:'status',ffrom:'from',fto:'to',fmin:'min'};
+  Object.keys(map).forEach(id=>{const el=$('#'+id);if(!el)return;
+    el.addEventListener(el.tagName==='SELECT'||el.type==='date'?'change':'input',()=>{S.filters[map[id]]=el.value;rerender()})});
+  const c=$('#fclear');if(c)c.onclick=()=>{filterState();rerender()};
+}
+
+/* ============ INVOICES ============ */
+PAGES.invoices=function(el){
+  filterState(S.opts.estate?{estate:S.opts.estate}:null);
+  let page=1,per=12;
+  function draw(){
+    const list=applyFilters(),pages=Math.max(1,Math.ceil(list.length/per));
+    if(page>pages)page=pages;
+    const slice=list.slice((page-1)*per,page*per);
+    el.innerHTML=`
+     <div class="row" style="margin-bottom:16px">
+      <div class="page-head" style="margin:0"><h1>My invoices</h1><p>Every billing statement you have filed across your three assigned estates.</p></div>
+      <button class="btn" id="newInv" style="margin-left:auto">${ic('upload',16)} Submit billing statement</button>
+     </div>
+     ${filterBar(['All',...STATUSES.filter(s=>s!=='Paid'),'Paid'])}
+     <div class="card"><div class="table-wrap"><table><thead><tr>
+      <th>Invoice no.</th><th>Estate</th><th>Project / work description</th><th>Invoice date</th><th>Amount</th><th>Approval stage</th><th>Expected payment</th><th>Actions</th>
+     </tr></thead><tbody>${invoiceRows(slice)}</tbody></table></div>
+     <div class="card-b row" style="border-top:1px solid var(--border)">
+      <span style="font-size:12.5px;color:var(--muted)">Showing ${slice.length?((page-1)*per+1):0}–${(page-1)*per+slice.length} of ${list.length} invoices · ${peso(list.reduce((a,b)=>a+b.amount,0))}</span>
+      <span style="margin-left:auto" class="row">
+       <button class="btn sm ghost" id="prev" ${page===1?'disabled':''}>Previous</button>
+       <span style="font-size:12.5px">Page ${page} of ${pages}</span>
+       <button class="btn sm ghost" id="next" ${page===pages?'disabled':''}>Next</button></span>
+     </div></div>`;
+    $('#fcount').textContent=list.length+' of '+S.invoices.length+' invoices';
+    wireFilters(draw);wireInvoiceTable(el);
+    $('#newInv').onclick=()=>go('submit');
+    $('#prev').onclick=()=>{page--;draw()};$('#next').onclick=()=>{page++;draw()};
+  }
+  draw();
+};
+
+/* ============ APPROVAL TRACKER ============ */
+PAGES.tracker=function(el){
+  filterState(S.opts.focus?{q:S.opts.focus}:null);
+  function draw(){
+    const list=applyFilters().slice(0,40);
+    el.innerHTML=`
+     <div class="page-head"><h1>Approval tracker</h1><p>Follow each invoice from submission through to payment.</p></div>
+     ${filterBar(['All','Submitted','Under Review','For Approval','Approved','For Processing','Returned / On Hold','Paid'])}
+     <div class="grid g2">${list.length?list.map(i=>{
+       const idx=stageIndex(i.status),pct=((idx+1)/STAGE_ORDER.length*100).toFixed(0);
+       const col=i.status==='Returned / On Hold'?'--red':i.status==='Approved'?'--green':i.status==='For Processing'?'--purple':'--yellow';
+       return `<div class="card"><div class="card-b">
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-start">
+         <div style="flex:1"><b style="font-size:14px">${i.invoiceNumber}</b>
+          <div style="font-size:12.5px;color:var(--muted)">${i.estate} • ${esc(i.project)}</div></div>
+         ${statusPill(i.status)}
+        </div>
+        <div class="row" style="margin-top:12px;gap:8px;flex-wrap:nowrap">
+         ${STAGE_ORDER.map((s,n)=>`<span title="${s}" style="flex:1;height:6px;border-radius:4px;background:${n<=idx?`var(${col})`:'var(--border)'}"></span>`).join('')}
+        </div>
+        <div class="row" style="margin-top:10px">
+         <span style="font-size:12px;color:var(--muted)">Stage ${idx+1} of 7 — ${STAGE_ORDER[idx]} · ${pct}%</span>
+         <span class="amt" style="margin-left:auto">${peso(i.amount)}</span>
+        </div>
+        <div class="row" style="margin-top:12px">
+         <span style="font-size:12px;color:var(--muted)">Expected payment ${fdate(i.expectedPaymentDate)}</span>
+         <button class="btn sm quiet" style="margin-left:auto" data-view="${i.invoiceNumber}">View timeline</button></div>
+       </div></div>`}).join(''):`<div class="card" style="grid-column:1/-1"><div class="empty"><h4>Nothing to track with these filters</h4><p>Clear the filters to see all 128 invoices.</p></div></div>`}
+     </div>`;
+    $('#fcount').textContent=applyFilters().length+' invoices in flight';
+    wireFilters(draw);wireInvoiceTable(el);
+  }
+  draw();
+};
+
+/* ============ PAYMENT HISTORY ============ */
+PAGES.history=function(el){
+  let st='All',q='';
+  function draw(){
+    const rows=S.payments.filter(p=>(st==='All'||p.status===st)&&
+      (!q||p.paymentId.toLowerCase().includes(q)||p.invoiceNumber.toLowerCase().includes(q)||p.estate.toLowerCase().includes(q)));
+    const paid=S.payments.filter(p=>p.status==='Paid').reduce((a,b)=>a+b.amount,0);
+    const sched=S.payments.filter(p=>p.status==='Scheduled').reduce((a,b)=>a+b.amount,0);
+    const proc=S.payments.filter(p=>p.status==='Processing').reduce((a,b)=>a+b.amount,0);
+    el.innerHTML=`
+     <div class="page-head"><h1>Payment history</h1><p>Disbursements released, scheduled and in process.</p></div>
+     <div class="grid g3" style="margin-bottom:16px">
+      ${kpi('Total released',peso(paid),S.payments.filter(p=>p.status==='Paid').length+' payments','checkc','--green',1)}
+      ${kpi('Scheduled',peso(sched),S.payments.filter(p=>p.status==='Scheduled').length+' upcoming disbursements','calendar','--yellow',1)}
+      ${kpi('In processing',peso(proc),S.payments.filter(p=>p.status==='Processing').length+' with treasury','refresh','--purple',1)}
+     </div>
+     <div class="card" style="margin-bottom:16px"><div class="card-b row">
+      <input type="text" id="pq" placeholder="Search payment reference, invoice or estate" value="${esc(q)}" style="width:300px">
+      <div class="row" style="gap:6px">${['All','Paid','Scheduled','Processing'].map(s=>`<button class="chip ${st===s?'on':''}" data-st="${s}">${s}</button>`).join('')}</div>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--muted)">${rows.length} records</span></div></div>
+     <div class="card"><div class="table-wrap"><table><thead><tr>
+      <th>Payment reference</th><th>Invoice</th><th>Estate</th><th>Payment date</th><th>Amount</th><th>Payment method</th><th>Status</th><th></th>
+     </tr></thead><tbody>${rows.length?rows.slice(0,60).map(p=>`<tr>
+      <td class="mono">${p.paymentId}</td><td><button class="linkbtn" data-view="${p.invoiceNumber}">${p.invoiceNumber}</button></td>
+      <td>${p.estate}</td><td>${fdate(p.paymentDate)}</td><td class="amt">${peso(p.amount)}</td>
+      <td>${p.method}</td><td>${statusPill(p.status)}</td>
+      <td><button class="linkbtn" data-rem="${p.paymentId}">Remittance advice</button></td></tr>`).join(''):
+      `<tr><td colspan="8"><div class="empty"><h4>No payments match this search</h4><p>Try a different reference or clear the status filter.</p></div></td></tr>`}
+     </tbody></table></div></div>`;
+    $('#pq').addEventListener('input',e=>{q=e.target.value.toLowerCase();draw();const i=$('#pq');i.focus();i.setSelectionRange(i.value.length,i.value.length)});
+    el.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{st=b.dataset.st;draw()});
+    el.querySelectorAll('[data-rem]').forEach(b=>b.onclick=()=>toast('Remittance advice '+b.dataset.rem+' downloaded.','ok'));
+    wireInvoiceTable(el);
+  }
+  draw();
+};
+
+/* ============ PAYMENT SCHEDULE ============ */
+PAGES.schedule=function(el){
+  let view='list';
+  const UP=[['2025-05-30','INV-2025-0445','McKinley Hill',275000],['2025-06-05','INV-2025-0448','McKinley Hill',486000],
+   ['2025-06-10','INV-2025-0449','McKinley West',198000],['2025-06-15','INV-2025-0447','McKinley West',312000],
+   ['2025-06-20','INV-2025-0446','Uptown Bonifacio',198500]].map(u=>({d:new Date(u[0]),inv:u[1],est:u[2],amt:u[3]}));
+  function draw(){
+    const total=UP.reduce((a,b)=>a+b.amt,0);
+    el.innerHTML=`
+     <div class="row" style="margin-bottom:16px">
+      <div class="page-head" style="margin:0"><h1>Upcoming disbursements</h1><p>Five payments scheduled between May 30 and June 20, 2025 — ${peso(total)} in total.</p></div>
+      <div class="tabs" style="margin-left:auto"><button class="${view==='list'?'on':''}" data-v="list">List</button><button class="${view==='cal'?'on':''}" data-v="cal">Calendar</button></div>
+     </div>
+     ${view==='list'?`<div class="card"><div class="card-b stack" style="gap:11px">
+       ${UP.map(u=>`<div class="row" style="flex-wrap:nowrap;border:1px solid var(--border);border-radius:12px;padding:13px 15px">
+        <div style="text-align:center;width:56px;flex:none">
+         <div style="font-size:11px;color:var(--muted);text-transform:uppercase">${MON[u.d.getMonth()]}</div>
+         <div style="font-family:Manrope;font-size:21px;font-weight:800">${u.d.getDate()}</div></div>
+        <div style="flex:1"><b>${u.inv}</b><div style="font-size:12.5px;color:var(--muted)">${u.est} • bank transfer</div></div>
+        <span class="amt" style="font-size:15px">${peso(u.amt)}</span>
+        <button class="btn sm ghost" data-view="${u.inv}">View</button></div>`).join('')}
+      </div></div>`:calendarView(UP)}`;
+    el.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{view=b.dataset.v;draw()});
+    wireInvoiceTable(el);
+    el.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openInvoice(b.dataset.cal));
+  }
+  draw();
+};
+function calendarView(UP){
+  let out='';
+  [4,5].forEach(m=>{
+    const first=new Date(2025,m,1),days=new Date(2025,m+1,0).getDate(),lead=first.getDay();
+    let cells='';
+    for(let i=0;i<lead;i++)cells+='<div class="cal-day muted"></div>';
+    for(let d=1;d<=days;d++){
+      const evs=UP.filter(u=>u.d.getMonth()===m&&u.d.getDate()===d);
+      cells+=`<div class="cal-day"><b>${d}</b>${evs.map(e=>`<div class="cal-ev" data-cal="${e.inv}">${e.inv.slice(-4)} · ${pesoShort(e.amt)}</div>`).join('')}</div>`;
+    }
+    out+=`<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>${['January','February','March','April','May','June'][m]} 2025</h3></div>
+     <div class="card-b"><div class="cal">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="dh">${d}</div>`).join('')}${cells}</div></div></div>`;
+  });
+  return out;
+}
+/* ============ ESTATES OVERVIEW ============ */
+PAGES.estates=function(el){
+  const rows=ESTATES.map(e=>{
+    const inv=S.invoices.filter(i=>i.estate===e);
+    const next=[...inv].filter(i=>i.expectedPaymentDate&&i.status==='Approved').sort((a,b)=>a.expectedPaymentDate-b.expectedPaymentDate)[0];
+    return {e,n:inv.length,total:inv.reduce((a,b)=>a+b.amount,0),
+      appr:inv.filter(i=>i.status==='Approved').reduce((a,b)=>a+b.amount,0),
+      pend:inv.filter(i=>i.status==='For Approval'||i.status==='For Processing').reduce((a,b)=>a+b.amount,0),
+      next:next?next:null};
+  });
+  el.innerHTML=`<div class="page-head"><h1>Estates overview</h1><p>Billing activity across the three townships you are assigned to. Select an estate to filter your invoices.</p></div>
+   <div class="grid g3">${rows.map(r=>`<div class="card est-card" data-est="${r.e}">
+    <div class="est-top"><h3>${r.e}</h3><span>${r.n} invoices filed</span></div>
+    <div class="card-b stack" style="gap:10px">
+     <div class="row"><span style="color:var(--muted);font-size:12.5px">Total billing</span><span class="amt" style="margin-left:auto">${peso(r.total)}</span></div>
+     <div class="row"><span style="color:var(--muted);font-size:12.5px">Approved</span><span class="amt" style="margin-left:auto;color:var(--green)">${peso(r.appr)}</span></div>
+     <div class="row"><span style="color:var(--muted);font-size:12.5px">Pending</span><span class="amt" style="margin-left:auto;color:var(--yellow)">${peso(r.pend)}</span></div>
+     <div class="row" style="border-top:1px solid var(--border);padding-top:10px">
+      <span style="color:var(--muted);font-size:12.5px">Next payment</span>
+      <span style="margin-left:auto;font-size:12.5px;font-weight:600">${r.next?fdate(r.next.expectedPaymentDate)+' · '+pesoShort(r.next.amount):'None scheduled'}</span></div>
+    </div></div>`).join('')}</div>`;
+  el.querySelectorAll('[data-est]').forEach(c=>c.onclick=()=>go('invoices',{estate:c.dataset.est}));
+};
+
+/* ============ VENDOR DIRECTORY ============ */
+PAGES.directory=function(el){
+  const v=S.vendor,inv=S.invoices;
+  const paid=S.payments.filter(p=>p.status==='Paid').reduce((a,b)=>a+b.amount,0);
+  const projects=[...new Set(inv.map(i=>i.project))];
+  el.innerHTML=`<div class="page-head"><h1>Vendor directory</h1><p>Your registered record. Other vendors' details are not shown in the vendor portal.</p></div>
+   <div class="card" style="margin-bottom:16px"><div class="card-b row" style="gap:18px">
+    <span class="avatar" style="width:58px;height:58px;font-size:19px">MG</span>
+    <div style="flex:1"><h3 style="font-size:18px">${v.vendorName}</h3>
+     <div style="font-size:12.5px;color:var(--muted)">${v.vendorId} · TIN ${v.tin} · ${v.contactPerson}</div></div>
+    <span class="pill p-approved">Active supplier</span>
+   </div></div>
+   <div class="grid g4" style="margin-bottom:16px">
+    ${kpi('Assigned estates',v.assignedEstates.length,v.assignedEstates.join(', '),'building','--blue')}
+    ${kpi('Active projects',projects.length,'Across all assigned estates','clipboard','--purple')}
+    ${kpi('Total submitted billing',peso(totalAmount()),inv.length+' invoices','file','--blue',1)}
+    ${kpi('Total paid',peso(paid),'Released to your account','checkc','--green',1)}
+   </div>
+   <div class="card"><div class="card-h"><h3>Estate assignments</h3><p>Who to contact per township</p></div>
+    <div class="table-wrap"><table><thead><tr><th>Estate</th><th>Invoices</th><th>Billing value</th><th>Procurement contact</th><th>Email</th></tr></thead>
+    <tbody>${v.assignedEstates.map((e,n)=>{const l=inv.filter(i=>i.estate===e);
+     return `<tr><td><b>${e}</b></td><td>${l.length}</td><td class="amt">${peso(l.reduce((a,b)=>a+b.amount,0))}</td>
+      <td>${['Grace Villanueva','Paolo Mendoza','Karla Dimaano'][n]}</td>
+      <td><a href="#">procurement.${e.split(' ')[0].toLowerCase()}@megaworld.com.ph</a></td></tr>`}).join('')}
+    </tbody></table></div></div>
+   <div class="card" style="margin-top:16px;border-color:var(--border)"><div class="card-b row" style="gap:11px;flex-wrap:nowrap">
+    <span style="color:var(--blue)">${ic('lock',20)}</span>
+    <span style="font-size:12.5px;color:var(--muted)">Records belonging to other vendors are filtered out before this page renders. The portal reads the master sheet, matches your authenticated TIN, and returns only your rows.</span></div></div>`;
+};
+
+/* ============ NOTIFICATIONS ============ */
+PAGES.notifications=function(el){
+  let cat='All';
+  function draw(){
+    const cats=['All',...new Set(NOTIFICATIONS.map(n=>n.cat))];
+    const list=NOTIFICATIONS.filter(n=>cat==='All'||n.cat===cat);
+    el.innerHTML=`<div class="row" style="margin-bottom:16px">
+      <div class="page-head" style="margin:0"><h1>Notifications</h1><p>${NOTIFICATIONS.filter(n=>!n.read).length} unread updates.</p></div>
+      <button class="btn ghost" id="markAll" style="margin-left:auto">Mark all as read</button></div>
+     <div class="row" style="margin-bottom:14px;gap:6px">${cats.map(c=>`<button class="chip ${cat===c?'on':''}" data-c="${c}">${c}</button>`).join('')}</div>
+     <div class="card">${list.length?list.map(n=>`<div class="notif ${n.read?'':'unread'}" data-n="${n.id}">
+       ${n.read?'<span style="width:8px;flex:none"></span>':'<span class="unread-dot"></span>'}
+       <span class="ico" style="background:color-mix(in srgb,var(${n.color}) 14%,transparent);color:var(${n.color})">${ic(n.icon,17)}</span>
+       <div style="flex:1"><p class="t">${n.title}</p><p>${n.body}</p></div>
+       <div style="text-align:right"><div style="font-size:11.5px;color:var(--muted)">${n.time}</div>
+        <div style="font-size:11px;color:var(--blue);font-weight:600">${n.cat}</div></div>
+      </div>`).join(''):'<div class="empty"><h4>Nothing here yet</h4><p>Submit a billing statement and updates will appear as it moves through approval.</p></div>'}</div>`;
+    $('#markAll').onclick=()=>{NOTIFICATIONS.forEach(n=>n.read=true);renderNav();draw();toast('All notifications marked as read.','ok')};
+    el.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{cat=b.dataset.c;draw()});
+    el.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{
+      const n=NOTIFICATIONS.find(x=>x.id==b.dataset.n);n.read=true;renderNav();
+      const m=n.body.match(/INV-\d{4}-\d{4}/);draw();if(m&&S.invoices.some(i=>i.invoiceNumber===m[0]))openInvoice(m[0]);
+    });
+  }
+  draw();
+};
+
+/* ============ DOCUMENTS ============ */
+PAGES.documents=function(el){
+  let cat='All',q='';
+  const CATS=['All','Billing Statements','Invoices','Purchase Orders','Supporting Documents','Payment Documents'];
+  function draw(){
+    const rows=S.docs.filter(d=>(cat==='All'||d.cat===cat||(cat==='Invoices'&&d.cat==='Billing Statements'))&&
+      (!q||d.name.toLowerCase().includes(q)||d.invoice.toLowerCase().includes(q)||d.estate.toLowerCase().includes(q)));
+    el.innerHTML=`<div class="row" style="margin-bottom:16px">
+      <div class="page-head" style="margin:0"><h1>Documents & files</h1><p>Every file you have uploaded, stored in your vendor folder on Drive.</p></div>
+      <button class="btn ghost" id="openDrive" style="margin-left:auto">${ic('drive',16)} Open vendor folder</button></div>
+     <div class="card" style="margin-bottom:16px"><div class="card-b row">
+      <input type="text" id="dq" placeholder="Search file name, invoice or estate" value="${esc(q)}" style="width:300px">
+      <div class="row" style="gap:6px">${CATS.map(c=>`<button class="chip ${cat===c?'on':''}" data-c="${c}">${c}</button>`).join('')}</div>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--muted)">${rows.length} files</span></div></div>
+     <div class="card"><div class="table-wrap"><table><thead><tr>
+      <th>File name</th><th>Invoice</th><th>Estate</th><th>Category</th><th>Uploaded</th><th>Type</th><th>Size</th><th>Actions</th>
+     </tr></thead><tbody>${rows.length?rows.slice(0,40).map(d=>`<tr>
+      <td class="row" style="gap:9px;flex-wrap:nowrap"><span class="ico" style="width:28px;height:28px;background:var(--blue-light);color:var(--blue)">${ic('file',15)}</span>${esc(d.name)}</td>
+      <td class="mono">${d.invoice}</td><td>${d.estate}</td><td>${d.cat}</td><td>${fdate(d.date)}</td><td>${d.type}</td><td>${d.size}</td>
+      <td style="white-space:nowrap"><button class="linkbtn" data-view="${d.invoice}">View</button>
+       <button class="linkbtn" data-dl="${esc(d.name)}">Download</button></td></tr>`).join(''):
+      `<tr><td colspan="8"><div class="empty"><h4>No files here</h4><p>Upload a billing statement and its documents will be filed automatically.</p></div></td></tr>`}
+     </tbody></table></div></div>`;
+    $('#dq').addEventListener('input',e=>{q=e.target.value.toLowerCase();draw();const i=$('#dq');i.focus();i.setSelectionRange(i.value.length,i.value.length)});
+    $('#openDrive').onclick=()=>toast('Opening Drive folder: /Vendors/V-000710 – Maninvest General Services');
+    el.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{cat=b.dataset.c;draw()});
+    el.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>toast('Downloading '+b.dataset.dl,'ok'));
+    wireInvoiceTable(el);
+  }
+  draw();
+};
+
+/* ============ FORMS ============ */
+PAGES.forms=function(el){
+  const F=[['Submit billing statement','Upload an invoice, assign it to a purchase order and send it for review.','May 28, 2025','submit','upload'],
+   ['Update vendor information','Change your contact person, address, bank details or authorized signatories.','May 12, 2025','vendor','user'],
+   ['Request payment status','Ask treasury for an update on a specific invoice or payment reference.','Apr 30, 2025','status','clock'],
+   ['Submit supporting document','Attach a missing document to an invoice that was returned.','Apr 22, 2025','support','file'],
+   ['Contact procurement','Raise a question with the procurement team of a specific estate.','Apr 08, 2025','contact','mail']];
+  el.innerHTML=`<div class="page-head"><h1>Forms</h1><p>Everything you can file through the portal.</p></div>
+   <div class="grid g3">${F.map(f=>`<div class="card"><div class="card-b stack" style="gap:12px">
+    <span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic(f[4],18)}</span>
+    <div><b style="font-size:14.5px">${f[0]}</b><div style="font-size:12.5px;color:var(--muted);margin-top:4px">${f[1]}</div></div>
+    <div class="row" style="border-top:1px solid var(--border);padding-top:12px">
+     <span style="font-size:11.5px;color:var(--muted)">Last updated ${f[2]}</span>
+     <button class="btn sm" style="margin-left:auto" data-f="${f[3]}">Open form</button></div>
+   </div></div>`).join('')}</div>`;
+  el.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{
+    if(b.dataset.f==='submit'){go('submit');return}
+    openModal(genericForm(b.dataset.f));
+    const fm=$('#layer');
+    fm.querySelector('#gfSubmit').onclick=()=>{closeLayer();toast('Request sent. Procurement will reply by email within 2 business days.','ok')};
+  });
+};
+function genericForm(kind){
+  const T={vendor:['Update vendor information','Tell us what changed and we will update your record in the master sheet.'],
+   status:['Request payment status','We will check the disbursement queue and reply by email.'],
+   support:['Submit supporting document','Attach the document the reviewer asked for.'],
+   contact:['Contact procurement','Send a question to the procurement team of one estate.']}[kind];
+  return `<div class="drawer-h"><div><h3>${T[0]}</h3><p>${T[1]}</p></div><button class="x" data-close="1">✕</button></div>
+   <div style="padding:20px">
+    <div class="field"><label>Vendor</label><input type="text" value="${S.vendor.vendorName}" disabled></div>
+    <div class="field"><label>Estate / township <span class="req">*</span></label><select>${ESTATES.map(e=>`<option>${e}</option>`).join('')}</select></div>
+    <div class="field"><label>Reference invoice</label><input type="text" placeholder="e.g. INV-2025-0447"></div>
+    <div class="field"><label>Details <span class="req">*</span></label><textarea rows="4" placeholder="Describe what you need"></textarea></div>
+    <div class="row"><button class="btn" id="gfSubmit">Send request</button><button class="btn ghost" data-close="1">Cancel</button></div>
+   </div>`;
+}
+
+/* ============ SUPPORT ============ */
+PAGES.support=function(el){
+  const FAQ=[['How do I submit a billing statement?','Open Submit billing statement from the sidebar or the dashboard. Upload your invoice, fill in the billing details, tag the purchase orders you are billing against, review the summary and submit. You will get a reference number on screen and by email.'],
+   ['How do I check invoice status?','Every invoice shows its current approval stage in Invoices and Approval tracker. Open any invoice to see the full timeline from submission to payment, with the date each stage was cleared.'],
+   ['How do I know when payment is scheduled?','Once an invoice is approved, treasury assigns a disbursement date. It appears on the Payment schedule page in both list and calendar view, and you receive a notification when the date is set.'],
+   ['What documents are required?','A billing statement or sales invoice, the signed statement of work accomplished, and the official receipt. Some estates also ask for a progress photo set — the procurement contact for that estate will tell you.'],
+   ['What happens when a document is returned?','The invoice moves to Returned / on hold and you get a notification explaining what is missing. Attach the corrected document through Submit supporting document; your original submission date is kept.'],
+   ['Who should I contact for billing concerns?','Start with the procurement contact for the estate concerned — they are listed in Vendor directory. For payment and disbursement questions, use Request payment status.']];
+  el.innerHTML=`<div class="page-head"><h1>Support & help</h1><p>Answers to the questions vendors ask most, and a direct line to procurement.</p></div>
+   <div class="grid g21">
+    <div class="card"><div class="card-h"><h3>Frequently asked questions</h3></div>
+     <div>${FAQ.map((f,n)=>`<div class="faq" data-q="${n}"><button>${ic('chevr',15)} ${f[0]}</button><div class="ans">${f[1]}</div></div>`).join('')}</div></div>
+    <div class="stack">
+     <div class="card"><div class="card-h"><h3>Contact support</h3><p>We reply within one business day</p></div>
+      <div class="card-b">
+       <div class="field"><label>Topic <span class="req">*</span></label><select id="stopic"><option>Billing submission</option><option>Invoice status</option><option>Payment and disbursement</option><option>Portal access</option><option>Other</option></select></div>
+       <div class="field"><label>Estate</label><select>${ESTATES.map(e=>`<option>${e}</option>`).join('')}</select></div>
+       <div class="field"><label>Message <span class="req">*</span></label><textarea id="smsg" rows="4" placeholder="Tell us what you need"></textarea></div>
+       <button class="btn block" id="sendSupport">Send support request</button>
+      </div></div>
+     <div class="card"><div class="card-b stack" style="gap:12px">
+      <div class="row" style="flex-wrap:nowrap"><span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('mail',17)}</span>
+       <div><b style="font-size:13px">vendorsupport@megaworld.com.ph</b><div style="font-size:12px;color:var(--muted)">Billing and portal questions</div></div></div>
+      <div class="row" style="flex-wrap:nowrap"><span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('clock',17)}</span>
+       <div><b style="font-size:13px">Mon–Fri, 8:30 AM – 5:30 PM</b><div style="font-size:12px;color:var(--muted)">Philippine Standard Time</div></div></div>
+     </div></div>
+    </div></div>`;
+  el.querySelectorAll('.faq').forEach(f=>f.querySelector('button').onclick=()=>f.classList.toggle('open'));
+  $('#sendSupport').onclick=()=>{
+    if(!$('#smsg').value.trim()){toast('Add a message so we know what to help with.','warn');return}
+    $('#smsg').value='';toast('Support request sent. Ticket SR-2025-0412 created.','ok');
+  };
+};
+
+/* ============ PROFILE ============ */
+PAGES.profile=function(el){
+  const v=S.vendor;
+  el.innerHTML=`<div class="page-head"><h1>My profile</h1><p>Your company record as registered with Megaworld.</p></div>
+   <div class="grid g21"><div class="stack">
+    <div class="card"><div class="card-h"><h3>Vendor information</h3>
+      <button class="btn sm ghost" id="editV" style="margin-left:auto">Request an update</button></div>
+     <div class="card-b"><div class="dl">
+      <div><dt>Company name</dt><dd>${v.vendorName}</dd></div><div><dt>Vendor ID</dt><dd>${v.vendorId}</dd></div>
+      <div><dt>TIN</dt><dd>${v.tin}</dd></div><div><dt>Contact person</dt><dd>${v.contactPerson}</dd></div>
+      <div><dt>Email</dt><dd>${v.email}</dd></div><div><dt>Phone</dt><dd>${v.phone}</dd></div>
+      <div style="grid-column:1/-1"><dt>Business address</dt><dd>${v.address}</dd></div>
+     </div></div></div>
+    <div class="card"><div class="card-h"><h3>Assigned estates</h3><p>Set by Megaworld procurement</p></div>
+     <div class="card-b row" style="gap:8px">${v.assignedEstates.map(e=>`<span class="chip on">${e}</span>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>Notification preferences</h3></div>
+     <div class="card-b stack" style="gap:13px">
+      ${[['Submission confirmations','Email me when a billing statement is recorded',1],
+         ['Approval updates','Email me when an invoice changes approval stage',1],
+         ['Returned documents','Email and notify me when something needs correcting',1],
+         ['Payment scheduling','Notify me when a disbursement date is set',1],
+         ['Weekly digest','A Monday summary of everything in flight',0]]
+       .map((p,n)=>`<label class="checkbox"><input type="checkbox" ${p[2]?'checked':''} data-pref="${n}">
+        <span><b style="font-size:13px">${p[0]}</b><div style="font-size:12px;color:var(--muted)">${p[1]}</div></span></label>`).join('')}
+     </div></div>
+   </div>
+   <div class="stack">
+    <div class="card"><div class="card-b" style="text-align:center">
+     <span class="avatar" style="width:72px;height:72px;font-size:23px;margin:0 auto 12px">MG</span>
+     <h3 style="font-size:16px">${v.vendorName}</h3>
+     <div style="font-size:12.5px;color:var(--muted)">${v.vendorId}</div>
+     <div style="margin-top:12px"><span class="pill p-approved">Active supplier</span></div></div></div>
+    <div class="card"><div class="card-h"><h3>Security</h3></div>
+     <div class="card-b stack" style="gap:12px">
+      <div class="row" style="flex-wrap:nowrap"><span class="ico" style="background:rgba(22,167,101,.13);color:var(--green)">${ic('shield',17)}</span>
+       <div style="flex:1"><b style="font-size:13px">Vendor-scoped access</b><div style="font-size:12px;color:var(--muted)">You can only see records tagged to TIN ${v.tin}.</div></div></div>
+      <div class="row" style="flex-wrap:nowrap"><span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('lock',17)}</span>
+       <div style="flex:1"><b style="font-size:13px">Access code</b><div style="font-size:12px;color:var(--muted)">Last changed Apr 02, 2025</div></div>
+       <button class="btn sm ghost" id="chg">Change</button></div>
+      <div class="row" style="flex-wrap:nowrap"><span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('users',17)}</span>
+       <div style="flex:1"><b style="font-size:13px">Authorized users</b><div style="font-size:12px;color:var(--muted)">2 people can access this account</div></div></div>
+     </div></div>
+   </div></div>`;
+  $('#editV').onclick=()=>{openModal(genericForm('vendor'));$('#layer').querySelector('#gfSubmit').onclick=()=>{closeLayer();toast('Update request sent to vendor accreditation.','ok')}};
+  $('#chg').onclick=()=>toast('An access-code reset link has been emailed to '+v.email,'ok');
+  el.querySelectorAll('[data-pref]').forEach(c=>c.onchange=()=>toast('Notification preferences saved.','ok'));
+};
+/* ============ SUBMIT BILLING STATEMENT ============ */
+const SUB_STEPS=['Invoice upload','Invoice details','Review & submit','Submitted'];
+function freshSubmit(){
+  return {step:0,file:null,errors:{},ref:null,
+    d:{vendorName:S.vendor.vendorName,tin:S.vendor.tin,invoiceNumber:'INV-2025-0450',invoiceDate:'2025-06-03',
+       billingPeriod:'May 1 – May 31, 2025',estate:'Uptown Bonifacio',project:'',amount:'250000',
+       poNumber:'',dueDate:'2025-07-03',remarks:''}};
+}
+PAGES.submit=function(el){
+  if(!S.submit)S.submit=freshSubmit();
+  drawSubmit(el);
+};
+function drawSubmit(el){
+  const st=S.submit;
+  el.innerHTML=`
+   <div class="page-head"><h1>Submit billing statement</h1><p>Submit your billing documents securely for review and processing.</p></div>
+   <div class="steps">${SUB_STEPS.map((s,n)=>`<div class="step ${n===st.step?'on':n<st.step?'done':''}">
+     <i>${n<st.step?'✓':n+1}</i>${s}</div>`).join('')}</div>
+   <div id="stepBody"></div>`;
+  const b=$('#stepBody');
+  [stepUpload,stepDetails,stepReview,stepDone][st.step](b,el);
+}
+function stepUpload(b,el){
+  const st=S.submit;
+  b.innerHTML=`<div class="card"><div class="card-h"><h3>Invoice upload</h3><p>Attach your billing statement or sales invoice</p></div>
+   <div class="card-b">
+    <div class="drop" id="drop">
+     <span style="color:var(--blue)">${ic('cloud',40)}</span>
+     <h4>Drag and drop, or browse</h4>
+     <p>PDF, PNG or JPG · up to 10 MB</p>
+     <button class="btn" style="margin-top:14px" id="browse">Browse files</button>
+     <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" hidden>
+    </div>
+    <div id="fileZone"></div>
+    <div class="row" style="margin-top:20px"><button class="btn" id="next" ${st.file?'':'disabled'}>Continue to invoice details</button>
+     <button class="btn ghost" id="cancel">Cancel</button></div>
+   </div></div>
+   <div class="card" style="margin-top:16px"><div class="card-b row" style="gap:11px;flex-wrap:nowrap">
+    <span style="color:var(--green)">${ic('shield',20)}</span>
+    <span style="font-size:12.5px;color:var(--muted)">Uploads are written to your own vendor folder on Drive. Only you and the procurement team for the estate you tag can open them.</span></div></div>`;
+  const drop=$('#drop'),input=$('#fileInput');
+  $('#browse').onclick=e=>{e.stopPropagation();input.click()};
+  drop.onclick=()=>input.click();
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
+  drop.addEventListener('drop',e=>{if(e.dataTransfer.files[0])takeFile(e.dataTransfer.files[0])});
+  input.onchange=()=>{if(input.files[0])takeFile(input.files[0])};
+  function takeFile(f){
+    if(f.size>10*1024*1024){toast('That file is over 10 MB. Compress it and try again.','warn');return}
+    st.file={name:f.name,size:(f.size/1048576).toFixed(2)+' MB'};
+    paintFile(0);let p=0;
+    const t=setInterval(()=>{p+=Math.random()*26;if(p>=100){p=100;clearInterval(t);$('#next').disabled=false;toast('Upload complete — '+f.name,'ok')}paintFile(p)},180);
+  }
+  function paintFile(p){
+    $('#fileZone').innerHTML=`<div class="file-row">
+      <span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('file',18)}</span>
+      <div style="flex:1"><b style="font-size:13px">${esc(st.file.name)}</b>
+       <div style="font-size:11.5px;color:var(--muted)">${st.file.size} · ${p>=100?'Uploaded':'Uploading '+Math.round(p)+'%'}</div>
+       <div class="prog"><i style="width:${p}%"></i></div></div>
+      <button class="btn sm ghost" id="rm">Remove</button></div>`;
+    $('#rm').onclick=e=>{e.stopPropagation();st.file=null;$('#fileZone').innerHTML='';$('#next').disabled=true};
+  }
+  if(st.file)paintFile(100);
+  $('#next').onclick=()=>{st.step=1;drawSubmit(el)};
+  $('#cancel').onclick=()=>{S.submit=null;go('dashboard')};
+}
+function stepDetails(b,el){
+  const st=S.submit,d=st.d;
+  const F=(label,name,type,extra)=>`<div class="field"><label>${label}</label>
+    ${type==='select'?`<select data-f="${name}">${extra.map(o=>`<option ${d[name]===o?'selected':''}>${o}</option>`).join('')}</select>`
+     :type==='textarea'?`<textarea data-f="${name}" rows="3" placeholder="${extra||''}">${esc(d[name])}</textarea>`
+     :`<input type="${type}" data-f="${name}" value="${esc(d[name])}" ${extra||''}>`}
+    <div class="error-msg" data-e="${name}">This field is required</div></div>`;
+  b.innerHTML=`<div class="card"><div class="card-h"><h3>Invoice details</h3><p>Fields marked <span class="req">*</span> are required</p></div>
+   <div class="card-b"><div class="grid g2" style="gap:0 18px">
+    <div class="field"><label>Vendor name</label><input type="text" value="${d.vendorName}" disabled></div>
+    <div class="field"><label>TIN</label><input type="text" value="${d.tin}" disabled></div>
+    ${F('Invoice number <span class="req">*</span>','invoiceNumber','text')}
+    ${F('Invoice date <span class="req">*</span>','invoiceDate','date')}
+    ${F('Billing period <span class="req">*</span>','billingPeriod','text')}
+    ${F('Estate / township <span class="req">*</span>','estate','select',ESTATES)}
+    <div style="grid-column:1/-1">${F('Project / work description <span class="req">*</span>','project','text','placeholder="e.g. Grounds Maintenance – Manpower Deployment"')}</div>
+    <div class="field"><label>Invoice amount <span class="req">*</span></label>
+     <div style="position:relative"><span style="position:absolute;left:12px;top:10px;color:var(--muted)">₱</span>
+      <input type="text" data-f="amount" value="${esc(d.amount)}" style="padding-left:26px" inputmode="numeric">
+      <div style="font-size:11.5px;color:var(--muted);margin-top:5px" id="amtPreview"></div></div>
+     <div class="error-msg" data-e="amount">Enter the invoice amount</div></div>
+    ${F('Purchase order number','poNumber','text','placeholder="e.g. PO00981 (optional)"')}
+    ${F('Due date','dueDate','date')}
+    <div style="grid-column:1/-1">${F('Remarks','remarks','textarea','Anything the reviewer should know')}</div>
+   </div>
+   <div class="row" style="margin-top:8px"><button class="btn" id="next">Continue to review</button>
+    <button class="btn ghost" id="back">Back</button>
+    <button class="btn ghost" id="draft" style="margin-left:auto">Save as draft</button></div>
+   </div></div>`;
+  const amtP=()=>{const n=Number(String(d.amount).replace(/[^\d.]/g,''))||0;$('#amtPreview').textContent=n?peso(n):''};
+  b.querySelectorAll('[data-f]').forEach(i=>i.addEventListener('input',()=>{d[i.dataset.f]=i.value;if(i.dataset.f==='amount')amtP()}));
+  b.querySelectorAll('select[data-f]').forEach(i=>i.addEventListener('change',()=>d[i.dataset.f]=i.value));
+  amtP();
+  $('#back').onclick=()=>{st.step=0;drawSubmit(el)};
+  $('#draft').onclick=()=>{S.drafts.push({...d});toast('Saved as draft. You can finish it from Forms.','ok')};
+  $('#next').onclick=()=>{
+    let ok=true;
+    ['invoiceNumber','invoiceDate','billingPeriod','estate','project','amount'].forEach(f=>{
+      const bad=!String(d[f]).trim()||(f==='amount'&&!Number(String(d.amount).replace(/[^\d.]/g,'')));
+      const e=b.querySelector(`[data-e="${f}"]`);if(e)e.style.display=bad?'block':'none';
+      const inp=b.querySelector(`[data-f="${f}"]`);if(inp)inp.style.borderColor=bad?'var(--red)':'';
+      if(bad)ok=false});
+    if(!ok){toast('Some required fields still need filling in.','warn');return}
+    st.step=2;drawSubmit(el);
+  };
+}
+function stepReview(b,el){
+  const st=S.submit,d=st.d,amt=Number(String(d.amount).replace(/[^\d.]/g,''))||0;
+  const sec=(title,step,rows)=>`<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>${title}</h3>
+    <button class="btn sm ghost" data-edit="${step}" style="margin-left:auto">Edit</button></div>
+   <div class="card-b"><div class="dl">${rows.map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]||'—'}</dd></div>`).join('')}</div></div></div>`;
+  b.innerHTML=`
+   ${sec('Vendor information',1,[['Vendor',d.vendorName],['TIN',d.tin],['Vendor ID',S.vendor.vendorId],['Contact person',S.vendor.contactPerson]])}
+   ${sec('Billing information',1,[['Invoice number',d.invoiceNumber],['Invoice date',fdate(new Date(d.invoiceDate))],['Billing period',d.billingPeriod],['Invoice amount',peso(amt)],['Purchase order',d.poNumber],['Due date',fdate(new Date(d.dueDate))],['Remarks',esc(d.remarks)]])}
+   ${sec('Project information',1,[['Estate / township',d.estate],['Project / work description',esc(d.project)]])}
+   <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Supporting documents</h3>
+    <button class="btn sm ghost" data-edit="0" style="margin-left:auto">Edit</button></div>
+    <div class="card-b"><div class="row" style="flex-wrap:nowrap">
+     <span class="ico" style="background:var(--blue-light);color:var(--blue)">${ic('file',17)}</span>
+     <span style="flex:1">${st.file?esc(st.file.name)+' · '+st.file.size:'No file attached'}</span>
+     ${st.file?'<span class="pill p-approved">Uploaded</span>':''}</div></div></div>
+   <div class="card"><div class="card-b">
+    <label class="checkbox"><input type="checkbox" id="confirm">
+     <span>I confirm that the information and documents submitted are accurate and complete.</span></label>
+    <div class="row" style="margin-top:16px"><button class="btn" id="submitBtn" disabled>Submit billing statement</button>
+     <button class="btn ghost" id="draft">Save as draft</button>
+     <button class="btn ghost" id="back" style="margin-left:auto">Back</button></div>
+   </div></div>`;
+  b.querySelectorAll('[data-edit]').forEach(x=>x.onclick=()=>{st.step=+x.dataset.edit;drawSubmit(el)});
+  $('#confirm').onchange=e=>$('#submitBtn').disabled=!e.target.checked;
+  $('#back').onclick=()=>{st.step=1;drawSubmit(el)};
+  $('#draft').onclick=()=>{S.drafts.push({...d});toast('Saved as draft.','ok')};
+  $('#submitBtn').onclick=()=>runAutomation(el);
+}
+/* Apps Script automation simulation */
+function runAutomation(el){
+  const st=S.submit;
+  const steps=[['Submission received','Form response captured'],['Validating information','Vendor and required fields checked'],
+   ['Saving to master sheet','Row appended to the Q2 2025 billing sheet'],['Uploading documents','Filed under /Vendors/V-000125'],
+   ['Notifying assigned team','Email sent to procurement, Uptown Bonifacio'],['Submission complete','Dashboard updated']];
+  openModal(`<div class="drawer-h"><div>${ic('refresh',20)}</div><div><h3>Processing your submission</h3>
+    <p>Apps Script is recording your billing statement</p></div></div>
+   <div style="padding:20px"><div class="flow" id="flow">${steps.map((s,n)=>`<div class="flow-step" data-s="${n}">
+    <span class="ico" style="width:26px;height:26px;background:var(--blue-light);color:var(--blue)">${n+1}</span>
+    <div style="flex:1"><b style="font-size:13px">${s[0]}</b><div style="font-size:11.5px;color:var(--muted)">${s[1]}</div></div>
+    <span data-mark="${n}"></span></div>`).join('')}</div>
+    <div class="prog" style="margin-top:16px"><i id="autoProg"></i></div></div>`);
+  let n=0;
+  const tick=()=>{
+    const rows=$('#layer').querySelectorAll('.flow-step');
+    if(n>0){rows[n-1].classList.remove('on');rows[n-1].classList.add('done');
+      $('#layer').querySelector(`[data-mark="${n-1}"]`).innerHTML=`<span style="color:var(--green)">${ic('checkc',17)}</span>`}
+    if(n>=rows.length){finishSubmission(el);return}
+    rows[n].classList.add('on');
+    $('#layer').querySelector(`[data-mark="${n}"]`).innerHTML='<span class="sp"></span>';
+    $('#autoProg').style.width=((n+1)/rows.length*100)+'%';
+    n++;setTimeout(tick,700);
+  };
+  setTimeout(tick,300);
+}
+function finishSubmission(el){
+  const st=S.submit,d=st.d,amt=Number(String(d.amount).replace(/[^\d.]/g,''))||0;
+  st.ref='VMS-2025-'+String(50+S.drafts.length).padStart(4,'0');
+  const inv={invoiceId:'ID-NEW',invoiceNumber:d.invoiceNumber,vendorId:S.vendor.vendorId,vendorName:S.vendor.vendorName,
+    tin:S.vendor.tin,estate:d.estate,project:d.project,invoiceDate:new Date(d.invoiceDate),billingPeriod:d.billingPeriod,
+    amount:amt,poNumber:d.poNumber||'—',status:'Submitted',submissionDate:new Date(d.invoiceDate),
+    expectedPaymentDate:new Date(d.dueDate),documents:st.file?[st.file.name]:[]};
+  S.invoices.unshift(inv);MASTER_SHEET.unshift(inv);
+  NOTIFICATIONS.unshift({id:Date.now(),cat:'Submission',title:'Billing statement submitted',
+    body:`${d.invoiceNumber} • ${d.estate} • ${peso(amt)}`,time:'Just now',read:false,icon:'send',color:'--blue'});
+  closeLayer();renderNav();
+  toast('Billing statement recorded successfully.','ok');
+  setTimeout(()=>toast('Township admin / procurement team notified.','ok'),900);
+  st.step=3;drawSubmit(el);
+}
+function stepDone(b,el){
+  const st=S.submit,d=st.d,amt=Number(String(d.amount).replace(/[^\d.]/g,''))||0;
+  b.innerHTML=`<div class="card" style="margin-bottom:16px"><div class="success-wrap">
+    <div class="success-ico">${ic('checkc',40)}</div>
+    <h2 style="font-size:21px">Billing statement successfully submitted</h2>
+    <p style="color:var(--muted);max-width:52ch;margin:8px auto 22px">Your billing statement has been received and is now queued for review.</p>
+    <div class="dl" style="max-width:560px;margin:0 auto;text-align:left">
+     <div><dt>Invoice number</dt><dd>${d.invoiceNumber}</dd></div>
+     <div><dt>Reference number</dt><dd>${st.ref}</dd></div>
+     <div><dt>Submission date</dt><dd>${fdate(new Date())}</dd></div>
+     <div><dt>Estate</dt><dd>${d.estate}</dd></div>
+     <div><dt>Amount</dt><dd>${peso(amt)}</dd></div>
+     <div><dt>Status</dt><dd><span class="pill p-submitted">Submitted</span></dd></div>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:24px">
+     <button class="btn" id="viewStatus">View invoice status</button>
+     <button class="btn ghost" id="toDash">Back to dashboard</button>
+     <button class="btn ghost" id="again">Submit another billing statement</button>
+    </div></div></div>
+   <div class="card"><div class="card-h"><h3>Email sent to the assigned team</h3><p>Preview of the automated notification</p></div>
+    <div class="card-b"><div class="email">
+     <div class="email-h">
+      <div><b>Subject:</b> New billing submission – ${d.invoiceNumber} – ${S.vendor.vendorName}</div>
+      <div style="color:var(--muted)"><b>To:</b> Assigned township admin / procurement team, ${d.estate}</div>
+      <div style="color:var(--muted)"><b>From:</b> vms-noreply@megaworld.com.ph</div></div>
+     <div class="email-b">
+      <p style="margin-top:0">A new billing statement has been submitted.</p>
+      <div class="dl" style="margin:14px 0">
+       <div><dt>Vendor</dt><dd>${S.vendor.vendorName}</dd></div><div><dt>TIN</dt><dd>${S.vendor.tin}</dd></div>
+       <div><dt>Estate</dt><dd>${d.estate}</dd></div><div><dt>Invoice</dt><dd>${d.invoiceNumber}</dd></div>
+       <div><dt>Amount</dt><dd>${peso(amt)}</dd></div><div><dt>Submission date</dt><dd>${fdate(new Date())}</dd></div>
+       <div><dt>Status</dt><dd>Submitted</dd></div><div><dt>Reference</dt><dd>${st.ref}</dd></div>
+      </div>
+      <button class="btn" id="reviewBtn">Review billing submission</button>
+     </div></div></div></div>`;
+  $('#viewStatus').onclick=()=>{const no=d.invoiceNumber;S.submit=null;go('tracker',{focus:no})};
+  $('#toDash').onclick=()=>{S.submit=null;go('dashboard')};
+  $('#again').onclick=()=>{S.submit=freshSubmit();S.submit.d.invoiceNumber='INV-2025-0451';drawSubmit(el)};
+  $('#reviewBtn').onclick=()=>toast('This opens the reviewer view — available to Megaworld staff only.');
+}
+
+/* ============ BOOT ============ */
+renderLogin();
+</script>
+</body>
+</html>
